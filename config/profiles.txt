@@ -1,0 +1,8 @@
+# One public Truth Social profile per line.
+# Supported formats:
+# @realDonaldTrump
+# realDonaldTrump
+# 107780257626128497
+# https://truthsocial.com/@realDonaldTrump
+
+107780257626128497

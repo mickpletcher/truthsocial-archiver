@@ -1,0 +1,37 @@
+name: Scrape Truth Social Profiles
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run scraper
+        shell: pwsh
+        run: .\scripts\Scrape-TruthSocialProfiles.ps1
+
+      - name: Commit archive updates
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add docs/data
+
+          if (-not (git diff --cached --quiet)) {
+            git commit -m "Update Truth Social archive data"
+            git push
+          }
+          else {
+            Write-Host "No archive data changes to commit."
+          }

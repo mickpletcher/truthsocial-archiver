@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Truth Social Archive</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div>
+        <h1>Truth Social Archive</h1>
+        <div class="run-status" id="runStatus">Archive status unavailable.</div>
+      </div>
+      <div class="downloads">
+        <a href="data/archive-summary.json">Summary</a>
+        <a href="data/posts.jsonl">JSONL</a>
+        <a href="data/posts.json">JSON</a>
+        <a href="data/posts.csv">CSV</a>
+      </div>
+    </header>
+
+    <section class="controls" aria-label="Search filters">
+      <label>
+        Search
+        <input id="search" type="search" placeholder="Search posts">
+      </label>
+
+      <label>
+        Profile
+        <select id="profile">
+          <option value="">All profiles</option>
+        </select>
+      </label>
+
+      <label>
+        Start date
+        <input id="startDate" type="date">
+      </label>
+
+      <label>
+        End date
+        <input id="endDate" type="date">
+      </label>
+    </section>
+
+    <div class="summary" id="summary">Loading archive...</div>
+    <section class="results" id="results" aria-live="polite"></section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
