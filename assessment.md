@@ -28,6 +28,7 @@ Account IDs are preferred because they skip profile lookup.
 - Search UI shows media counts and links the first available media attachment URL.
 - Daily GitHub Actions workflow at `.github/workflows/scrape.yml`.
 - GitHub Actions checkout step uses `actions/checkout@v5`.
+- GitHub Actions scrape runs use workflow concurrency and rebase before pushing generated archive updates.
 - Optional Truth Social bearer token support through `-BearerToken` or `TRUTHSOCIAL_BEARER_TOKEN`.
 - Optional JSON request header overrides through `-HeadersPath`.
 - Seed JSONL, JSON, and CSV data files for first page load.
@@ -56,6 +57,7 @@ Results:
 - Seed `docs/data/archive-summary.json` parsed successfully.
 - Temporary anonymous scraper run with the known `403 Forbidden` condition wrote `archive-summary.json` with `status: "error"` and a bearer token guidance message.
 - Workflow text check confirmed `actions/checkout@v5`.
+- Workflow text check confirmed `git pull --rebase origin $env:GITHUB_REF_NAME` before `git push`.
 - Local static site served successfully at `http://127.0.0.1:8000/`.
 
 ## Known Issue

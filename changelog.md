@@ -17,12 +17,15 @@ All notable repo changes are logged here.
 - Expanded default request headers to better match browser API requests.
 - Changed blocked anonymous API errors to explain how to supply a bearer token instead of only reporting `403 Forbidden`.
 - Updated `.github/workflows/scrape.yml` from `actions/checkout@v4` to `actions/checkout@v5` to clear the Node 20 deprecation warning.
+- Added workflow concurrency for scrape runs.
+- Changed archive update pushes to rebase on the current branch before pushing.
 
 ### Verified
 
 - Verified PowerShell parser syntax for `scripts/Scrape-TruthSocialProfiles.ps1`.
 - Verified a temporary anonymous scraper run still records the blocked `403 Forbidden` condition cleanly.
 - Verified workflow text references `actions/checkout@v5`.
+- Verified workflow text includes the rebase before push command.
 
 ### Known Issues
 

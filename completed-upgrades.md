@@ -15,6 +15,7 @@ Summary:
 - Added optional JSON request header overrides through `-HeadersPath`.
 - Wired the GitHub Actions workflow to pass the `TRUTHSOCIAL_BEARER_TOKEN` repository secret when present.
 - Updated GitHub Actions checkout from `actions/checkout@v4` to `actions/checkout@v5`.
+- Added workflow concurrency and rebase before push to reduce archive update push conflicts.
 - Updated README guidance for blocked anonymous API requests.
 - Ignored `config/headers.local.json` so local token header files are not committed.
 - Removed the completed optional request header item from local `future-upgrades.md`.
@@ -35,6 +36,7 @@ Validation:
 - PowerShell syntax passed.
 - Temporary anonymous scraper run still hit `403 Forbidden` and wrote `archive-summary.json` with bearer token guidance.
 - Workflow text check confirmed `actions/checkout@v5`.
+- Workflow text check confirmed rebase before push.
 - Authenticated retrieval was not tested because no bearer token was available in this session.
 
 ## 2026-06-29

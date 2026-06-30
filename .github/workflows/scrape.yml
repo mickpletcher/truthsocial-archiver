@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: scrape-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   scrape:
     runs-on: windows-latest
@@ -32,6 +36,7 @@ jobs:
 
           if (-not (git diff --cached --quiet)) {
             git commit -m "Update Truth Social archive data"
+            git pull --rebase origin $env:GITHUB_REF_NAME
             git push
           }
           else {
