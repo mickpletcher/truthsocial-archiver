@@ -1,8 +1,21 @@
 {
-  "run_at": null,
-  "status": "not_run",
-  "profile_count": 0,
+  "run_at": "2026-06-30T13:06:10.0471729Z",
+  "status": "error",
+  "profile_count": 1,
   "total_posts": 0,
   "new_posts": 0,
-  "profiles": []
+  "profiles": [
+    {
+      "input": "107780257626128497",
+      "account_id": "107780257626128497",
+      "username": "107780257626128497",
+      "display_name": "107780257626128497",
+      "status": "error",
+      "total_posts": 0,
+      "existing_posts": 0,
+      "fetched_posts": 0,
+      "new_posts": 0,
+      "message": "Truth Social request failed with HTTP 403: https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_replies=true"
+    }
+  ]
 }
