@@ -2,6 +2,8 @@
 param(
     [string]$ProfilesPath,
     [string]$OutputRoot,
+    [string]$BearerToken,
+    [string]$HeadersPath,
     [int]$MaxPages = 0,
     [int]$Limit = 0,
     [int]$RequestDelaySeconds = 1,
@@ -20,17 +22,42 @@ if (-not $OutputRoot) {
     $OutputRoot = Join-Path $RepoRoot 'docs/data'
 }
 
+if (-not $BearerToken -and $env:TRUTHSOCIAL_BEARER_TOKEN) {
+    $BearerToken = $env:TRUTHSOCIAL_BEARER_TOKEN
+}
+
 $ProfilesPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ProfilesPath)
 $OutputRoot = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputRoot)
 
 $Headers = @{
-    'User-Agent' = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36'
-    'Accept'     = 'application/json'
+    'User-Agent'      = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36'
+    'Accept'          = 'application/json, text/plain, */*'
+    'Accept-Language' = 'en-US,en;q=0.9'
+    'Referer'         = 'https://truthsocial.com/'
 }
 
 $HtmlHeaders = @{
-    'User-Agent' = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36'
-    'Accept'     = 'text/html'
+    'User-Agent'      = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36'
+    'Accept'          = 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+    'Accept-Language' = 'en-US,en;q=0.9'
+}
+
+if ($BearerToken) {
+    $Headers.Authorization = "Bearer $BearerToken"
+}
+
+if ($HeadersPath) {
+    $HeadersPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($HeadersPath)
+    if (-not (Test-Path -LiteralPath $HeadersPath)) {
+        throw "Headers file not found: $HeadersPath"
+    }
+
+    $customHeaders = Get-Content -Raw -LiteralPath $HeadersPath | ConvertFrom-Json
+    foreach ($property in $customHeaders.PSObject.Properties) {
+        if ($property.Name -and $null -ne $property.Value) {
+            $Headers[$property.Name] = [string]$property.Value
+        }
+    }
 }
 
 function Invoke-TruthSocialApi {
@@ -49,6 +76,10 @@ function Invoke-TruthSocialApi {
         }
 
         if ($statusCode) {
+            if ($statusCode -eq 401 -or $statusCode -eq 403) {
+                throw "Truth Social request failed with HTTP $statusCode`: $Uri. Anonymous API access is blocked from this environment. Set TRUTHSOCIAL_BEARER_TOKEN or pass -BearerToken with a valid Truth Social bearer token."
+            }
+
             throw "Truth Social request failed with HTTP $statusCode`: $Uri"
         }
 

@@ -2,6 +2,33 @@
 
 All notable repo changes are logged here.
 
+## 2026-06-30
+
+### Added
+
+- Added `-BearerToken` and `TRUTHSOCIAL_BEARER_TOKEN` support to `scripts/Scrape-TruthSocialProfiles.ps1`.
+- Added `-HeadersPath` support for JSON based custom request headers.
+- Added GitHub Actions secret wiring for `TRUTHSOCIAL_BEARER_TOKEN`.
+- Documented bearer token and custom header usage in `README.md`.
+- Added `config/headers.local.json` to `.gitignore`.
+
+### Changed
+
+- Expanded default request headers to better match browser API requests.
+- Changed blocked anonymous API errors to explain how to supply a bearer token instead of only reporting `403 Forbidden`.
+- Updated `.github/workflows/scrape.yml` from `actions/checkout@v4` to `actions/checkout@v5` to clear the Node 20 deprecation warning.
+
+### Verified
+
+- Verified PowerShell parser syntax for `scripts/Scrape-TruthSocialProfiles.ps1`.
+- Verified a temporary anonymous scraper run still records the blocked `403 Forbidden` condition cleanly.
+- Verified workflow text references `actions/checkout@v5`.
+
+### Known Issues
+
+- Truth Social still returns `403 Forbidden` for anonymous statuses requests from this Codex environment.
+- A valid bearer token could not be tested because none was available in this session.
+
 ## 2026-06-29
 
 ### Added

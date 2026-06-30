@@ -61,6 +61,34 @@ Use a custom profile file:
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -ProfilesPath .\config\profiles.txt
 ```
 
+Use a Truth Social bearer token when anonymous API requests are blocked:
+
+```powershell
+$env:TRUTHSOCIAL_BEARER_TOKEN = '<token>'
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1
+```
+
+Or pass it for one run:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -BearerToken '<token>'
+```
+
+Use a custom JSON header file if Truth Social requires additional request headers:
+
+```powershell
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -HeadersPath .\config\headers.local.json
+```
+
+Example `headers.local.json`:
+
+```json
+{
+  "Authorization": "Bearer <token>",
+  "Referer": "https://truthsocial.com/@realDonaldTrump"
+}
+```
+
 Limit pages during testing:
 
 ```powershell
@@ -114,7 +142,14 @@ The workflow:
 
 No paid service is required.
 
-No secret is required unless Truth Social changes the endpoint behavior later.
+No secret is required only when Truth Social allows anonymous API access from the runner.
+
+If the run returns `403 Forbidden`, add a repository secret named `TRUTHSOCIAL_BEARER_TOKEN` and pass it to the scraper:
+
+```yaml
+env:
+  TRUTHSOCIAL_BEARER_TOKEN: ${{ secrets.TRUTHSOCIAL_BEARER_TOKEN }}
+```
 
 ## Change Log
 
@@ -176,11 +211,11 @@ Use `docs/data/posts.jsonl` as the canonical archive source for automation.
 
 ## Limitations
 
-This uses public Truth Social endpoints.
+This uses Truth Social endpoints that can be visible from the public web app.
 
 Endpoint behavior may change.
 
-The statuses endpoint may return `403 Forbidden` from some environments.
+The statuses endpoint may return `403 Forbidden` from some environments unless a valid bearer token or required request headers are supplied.
 
 Only public posts are archived.
 

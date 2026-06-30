@@ -27,6 +27,9 @@ Account IDs are preferred because they skip profile lookup.
 - Search UI shows a last run status badge from `docs/data/archive-summary.json`.
 - Search UI shows media counts and links the first available media attachment URL.
 - Daily GitHub Actions workflow at `.github/workflows/scrape.yml`.
+- GitHub Actions checkout step uses `actions/checkout@v5`.
+- Optional Truth Social bearer token support through `-BearerToken` or `TRUTHSOCIAL_BEARER_TOKEN`.
+- Optional JSON request header overrides through `-HeadersPath`.
 - Seed JSONL, JSON, and CSV data files for first page load.
 - Repo documentation in `README.md`.
 - Change tracking in `changelog.md`.
@@ -51,7 +54,8 @@ Results:
 - Seed `docs/data/posts.json` parsed successfully.
 - Seed `docs/data/posts.csv` parsed successfully.
 - Seed `docs/data/archive-summary.json` parsed successfully.
-- Temporary scraper run with the known `403 Forbidden` condition wrote `archive-summary.json` with `status: "error"` and exited cleanly.
+- Temporary anonymous scraper run with the known `403 Forbidden` condition wrote `archive-summary.json` with `status: "error"` and a bearer token guidance message.
+- Workflow text check confirmed `actions/checkout@v5`.
 - Local static site served successfully at `http://127.0.0.1:8000/`.
 
 ## Known Issue
@@ -64,15 +68,15 @@ https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_repl
 
 The scraper now builds that exact endpoint shape by default.
 
-The scraper records this condition in `docs/data/archive-summary.json`.
+The scraper records this condition in `docs/data/archive-summary.json` and explains that `TRUTHSOCIAL_BEARER_TOKEN` or `-BearerToken` is required when anonymous access is blocked.
 
-This should still be retested from a normal browser, local PowerShell session, or GitHub Actions runner.
+A valid bearer token was not available in this session, so authenticated retrieval still needs validation.
 
 ## Next Recommended Work
 
-1. Run the scraper from local PowerShell outside Codex.
-2. If local PowerShell works, commit and push the repo.
-3. Enable GitHub Pages from the `docs` folder.
+1. Get a valid Truth Social bearer token from an authenticated browser session.
+2. Run the scraper with `TRUTHSOCIAL_BEARER_TOKEN` set.
+3. Add `TRUTHSOCIAL_BEARER_TOKEN` as a GitHub repository secret.
 4. Run the GitHub Actions workflow manually.
 5. Confirm `docs/data/posts.jsonl`, `docs/data/posts.json`, `docs/data/posts.csv`, and `docs/data/archive-summary.json` update in the repo.
 6. Confirm the GitHub Pages search UI loads live archive data.

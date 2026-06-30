@@ -13,6 +13,7 @@ temp/
 # Local secrets and environment
 .env
 .env.*
+config/headers.local.json
 
 # Editor and OS files
 .vscode/
