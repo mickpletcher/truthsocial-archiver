@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-06-30T13:06:10.0471729Z",
+  "run_at": "2026-07-01T07:39:27.3977723Z",
   "status": "error",
   "profile_count": 1,
   "total_posts": 0,
@@ -15,7 +15,7 @@
       "existing_posts": 0,
       "fetched_posts": 0,
       "new_posts": 0,
-      "message": "Truth Social request failed with HTTP 403: https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_replies=true"
+      "message": "Truth Social request failed with HTTP 403: https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_replies=true. Anonymous API access is blocked from this environment. Set TRUTHSOCIAL_BEARER_TOKEN or pass -BearerToken with a valid Truth Social bearer token."
     }
   ]
 }
