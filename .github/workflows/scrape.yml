@@ -22,9 +22,35 @@ jobs:
 
       - name: Run scraper
         shell: pwsh
-        env:
-          TRUTHSOCIAL_BEARER_TOKEN: ${{ secrets.TRUTHSOCIAL_BEARER_TOKEN }}
         run: .\scripts\Scrape-TruthSocialProfiles.ps1
+
+      - name: Fail on scrape errors
+        shell: pwsh
+        run: |
+          $summaryPath = 'docs/data/archive-summary.json'
+
+          if (-not (Test-Path -LiteralPath $summaryPath)) {
+            Write-Error "Scraper did not write $summaryPath."
+            exit 1
+          }
+
+          $summary = Get-Content -Raw -LiteralPath $summaryPath | ConvertFrom-Json
+
+          if ($summary.status -eq 'error') {
+            $failedProfiles = @(
+              $summary.profiles |
+                Where-Object { $_.status -eq 'error' } |
+                ForEach-Object { $_.input }
+            ) -join ', '
+
+            Write-Error "Scraper reported an error for: $failedProfiles. See $summaryPath for details."
+            exit 1
+          }
+
+          if ($summary.status -ne 'ok') {
+            Write-Error "Scraper reported unexpected status '$($summary.status)' in $summaryPath."
+            exit 1
+          }
 
       - name: Commit archive updates
         shell: pwsh

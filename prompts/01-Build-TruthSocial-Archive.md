@@ -1,17 +1,14 @@
-Build a GitHub repository named truthsocial-archiver that archives public Truth Social posts from profiles listed in a text file and publishes a searchable GitHub Pages site.
+Build a GitHub repository named `truthsocial-archiver` that archives Donald J. Trump's public Truth Social posts and publishes a searchable GitHub Pages site.
 
-Requirements:
-
-1. Repository structure
+## Repository Structure
 
 Create:
 
+```text
 .github/workflows/scrape.yml
 config/profiles.txt
 scripts/Scrape-TruthSocialProfiles.ps1
 docs/data/posts.jsonl
-docs/data/posts.json
-docs/data/posts.csv
 docs/data/archive-summary.json
 docs/index.html
 docs/app.js
@@ -21,207 +18,103 @@ changelog.md
 assessment.md
 completed-upgrades.md
 .gitignore
+```
 
-2. Profile input file
+## Profile Scope
 
-Create config/profiles.txt.
+`config/profiles.txt` must contain only:
 
-Each non-empty line designates one public Truth Social profile to archive.
-
-Lines starting with # are comments.
-
-Supported line formats:
-
-107780257626128497
-@realDonaldTrump
-realDonaldTrump
+```text
 https://truthsocial.com/@realDonaldTrump
+```
 
-The scraper must process every listed profile.
+Reject any other profile. The upstream archive contains only Trump's posts.
 
-Account IDs are preferred because they skip profile lookup.
+## Public Data Source
 
-3. PowerShell scraper
+Use:
 
-Create scripts/Scrape-TruthSocialProfiles.ps1.
+```text
+https://ix.cnn.io/data/truth-social/truth_archive.json
+```
+
+Do not use a Truth Social login, bearer token, cookie, proxy, or direct Truth Social API call.
+
+Require a non-empty JSON array. Validate every record has `id`, `created_at`, and `url`. Require unique post IDs and require every URL to match:
+
+```text
+https://truthsocial.com/@realDonaldTrump/<post_id>
+```
+
+## PowerShell Scraper
+
+Create `scripts/Scrape-TruthSocialProfiles.ps1`.
 
 The scraper must:
 
-Read config/profiles.txt by default.
-Accept -ProfilesPath for a custom profile list.
-Accept -OutputRoot for a custom output folder.
-Accept -MaxPages for short test runs.
-Accept -Limit when an explicit page size is needed.
-Resolve handles and profile URLs to account IDs.
-Fall back to public profile page metadata when API profile lookup is blocked.
-Accept raw numeric account IDs.
-Fetch public posts for each resolved account.
-Use the statuses endpoint:
-https://truthsocial.com/api/v1/accounts/<account_id>/statuses
-Use query parameters:
-exclude_replies=true
-max_id=<oldest_previous_post_id> for pagination
-Do not add limit unless -Limit is provided.
-Load existing JSON files if they exist.
-Load existing JSONL files first when they exist.
-Merge new and existing posts.
-Dedupe by post id.
-Sort by created_at descending.
-Strip HTML from content into a clean text field.
-Preserve raw_content.
-Preserve profile_account_id, profile_username, profile_display_name, url, created_at, replies_count, reblogs_count, favourites_count, media attachments, quote_id, and in_reply_to_id.
-Export combined docs/data/posts.jsonl as the canonical archive.
-Export combined docs/data/posts.json for the GitHub Pages search UI.
-Export combined docs/data/posts.csv for spreadsheet review.
-Export docs/data/archive-summary.json with run_at, status, profile_count, total_posts, new_posts, and per-profile status details.
-Export per-profile docs/data/profiles/<profile>/posts.jsonl as the canonical profile archive.
-Export per-profile docs/data/profiles/<profile>/posts.json.
-Export per-profile docs/data/profiles/<profile>/posts.csv.
-Handle HTTP errors cleanly.
-Sleep 1 second between requests.
-Stop paging when the API returns no posts.
+- Read `config/profiles.txt` by default.
+- Accept `-ProfilesPath`, `-OutputRoot`, and `-SourceUrl`.
+- Convert source posts into the local archive schema.
+- Preserve post ID, text, raw content, timestamp, original URL, engagement counts, and media URLs.
+- Add profile account ID, username, and display name.
+- Add `scraped_at` only when a post is first archived.
+- Load existing JSONL records.
+- Append only unseen post IDs.
+- Never overwrite existing archived records.
+- Write `docs/data/posts.jsonl` as the only post archive.
+- Write `docs/data/archive-summary.json` with run, source, status, total, new-post, and profile details.
+- Exit nonzero after writing an error summary when source or output processing fails.
 
-4. GitHub Actions workflow
+Do not generate redundant JSON, CSV, or per-profile copies.
 
-Create .github/workflows/scrape.yml.
+## GitHub Actions
+
+Create `.github/workflows/scrape.yml`.
 
 The workflow must:
 
-Run daily at 6 AM UTC.
-Allow manual workflow_dispatch.
-Use windows-latest.
-Run the PowerShell scraper.
-Commit and push changes only if docs/data changed.
-Use permissions: contents: write.
+- Run daily at 6 AM UTC.
+- Support `workflow_dispatch`.
+- Use `windows-latest`.
+- Use `permissions: contents: write`.
+- Run the PowerShell scraper.
+- Fail when the scraper fails.
+- Read `docs/data/archive-summary.json` and fail on missing, `error`, or unexpected status.
+- Commit and push only changed files under `docs/data`.
+- Require no repository secrets.
 
-5. GitHub Pages search frontend
+## GitHub Pages Frontend
 
-Create a static site in docs/.
+Create a static site under `docs`.
 
-index.html must contain:
+The site must:
 
-Title: Truth Social Archive
-Search box
-Profile filter
-Date filter start
-Date filter end
-Results count
-Results list
-Link to download JSON
-Link to download JSONL
-Link to download CSV
-Link to download archive summary
-Last run status badge
+- Load `data/posts.jsonl` directly.
+- Parse one JSON object per non-empty line.
+- Load `data/archive-summary.json`.
+- Support text and date range filtering.
+- Read the `q` query parameter.
+- Sort posts newest first.
+- Show profile, timestamp, text, engagement counts, media link, and original post link.
+- Initially render no more than 200 matching posts.
+- Let users load every matching post in additional 200-post batches.
+- Handle empty results, invalid JSONL, archive load failure, and summary load failure.
+- Link to the JSONL archive and run summary.
 
-app.js must:
+## Documentation and Tracking
 
-Load data/posts.json.
-Load data/archive-summary.json.
-Treat data/posts.json as generated from data/posts.jsonl.
-Read query string parameter q.
-Support URLs like:
-?q=iran
-?q=supreme%20court
-Filter posts by text, profile, created_at, and url.
-Support date range filtering.
-Render newest first.
-Show profile, created_at, text, engagement counts, and link to original post.
-Highlight matching terms where practical.
-Handle empty results.
-Handle JSON load failure.
-Handle archive summary load failure.
+`README.md` must document the fixed profile, public source, append-only JSONL behavior, local command, workflow, Pages setup, and limitations.
 
-style.css must:
+Update `changelog.md` and `assessment.md` in the same pass as every behavior or data path change.
 
-Create a clean, readable layout.
-Use responsive styling.
-Keep the design simple and fast.
+Track shipped work in `completed-upgrades.md`. Keep active backlog items in ignored local `future-upgrades.md`.
 
-6. README.md
+## Quality Requirements
 
-Document:
-
-Project purpose.
-How config/profiles.txt works.
-Supported profile line formats.
-Data source.
-How the scraper works.
-Why JSONL is the canonical archive format.
-How pagination with max_id works.
-How to run locally.
-How GitHub Actions updates the archive.
-How to enable GitHub Pages from the docs folder.
-Example search URLs.
-Limitations:
-This uses public Truth Social endpoints.
-Endpoint behavior may change.
-Only public posts are archived.
-Media OCR/transcription is not included.
-This is not an official Truth Social API client.
-
-7. Changelog
-
-Create changelog.md.
-
-Log every repo change.
-
-Each entry must include:
-
-Date.
-Added files or features.
-Changed files or behavior.
-Validation performed.
-Known issues.
-
-Update changelog.md in the same pass as any future repo change.
-
-8. Assessment
-
-Create assessment.md.
-
-Track:
-
-Current repo state.
-Implemented features.
-Validation performed.
-Known issues.
-Next recommended work.
-Maintenance rules.
-
-Update assessment.md whenever repo behavior, commands, config, workflows, data paths, validation status, known issues, or next steps change.
-
-Update changelog.md in the same pass.
-
-9. Upgrade Tracking
-
-Create completed-upgrades.md.
-
-Create local future-upgrades.md and add it to .gitignore.
-
-completed-upgrades.md must track shipped upgrades with:
-
-Date.
-Status.
-Summary.
-Changed files.
-Validation.
-Known issues.
-
-future-upgrades.md must track active backlog items only and must stay ignored by Git.
-
-When a future item is completed:
-
-Remove it from future-upgrades.md.
-Add it to completed-upgrades.md.
-Update changelog.md.
-Update assessment.md.
-
-10. Quality requirements
-
-Use clear PowerShell.
-Avoid hardcoded local paths.
-Make scripts work from the repository root.
-Do not require paid services.
-Do not require secrets unless the endpoint later requires authentication.
-Do not overwrite existing data without merging.
-Keep the project lightweight.
+- Use clear PowerShell.
+- Avoid hardcoded local paths.
+- Work from the repository root.
+- Require no paid service or secret.
+- Fail closed on malformed, duplicate, empty, or wrong-profile source data.
+- Keep archived post records append-only.
+- Keep the implementation limited to the actual single-profile requirement.

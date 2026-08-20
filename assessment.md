@@ -2,92 +2,69 @@
 
 ## Current State
 
-The repo is now a PowerShell based Truth Social archive project.
+The local implementation archives Donald J. Trump's public Truth Social posts without a Truth Social login.
 
-It is designed to archive public posts from profiles listed in `config/profiles.txt`.
+It uses CNN's public JSON archive and keeps one append-only JSONL file under `docs/data`.
 
-The current default profile entry is the numeric account ID:
+The previous direct Truth Social API workflow was nonfunctional. All 52 scheduled runs from June 30 through August 20, 2026 returned `403 Forbidden`, archived zero posts, and still appeared green. A manual run with a bearer token also returned `403 Forbidden` from `windows-latest`.
 
-```text
-107780257626128497
-```
-
-Account IDs are preferred because they skip profile lookup.
+The replacement is implemented, validated, and published on the `codex/public-trump-archive` feature branch. It has not been merged into `main`.
 
 ## Implemented
 
-- Text file driven profile input through `config/profiles.txt`.
-- PowerShell scraper at `scripts/Scrape-TruthSocialProfiles.ps1`.
-- Canonical combined archive output under `docs/data/posts.jsonl`.
-- Generated combined archive output under `docs/data/posts.json` and `docs/data/posts.csv`.
-- Archive run summary output under `docs/data/archive-summary.json`.
-- Per profile archive output under `docs/data/profiles/<profile>/`.
-- Static GitHub Pages search UI under `docs/`.
-- Search UI filters all archived posts but renders only the first 200 matches to keep large result sets responsive.
-- Search UI shows a last run status badge from `docs/data/archive-summary.json`.
-- Search UI shows media counts and links the first available media attachment URL.
-- Daily GitHub Actions workflow at `.github/workflows/scrape.yml`.
-- GitHub Actions checkout step uses `actions/checkout@v5`.
-- GitHub Actions scrape runs use workflow concurrency and rebase before pushing generated archive updates.
-- Optional Truth Social bearer token support through `-BearerToken` or `TRUTHSOCIAL_BEARER_TOKEN`.
-- Optional JSON request header overrides through `-HeadersPath`.
-- Seed JSONL, JSON, and CSV data files for first page load.
-- Repo documentation in `README.md`.
-- Change tracking in `changelog.md`.
-- Completed upgrade tracking in `completed-upgrades.md`.
-- Local backlog tracking in ignored `future-upgrades.md`.
-- Build prompt in `prompts/01-Build-TruthSocial-Archive.md`.
+- Fixed profile target at `https://truthsocial.com/@realDonaldTrump`.
+- Public source at `https://ix.cnn.io/data/truth-social/truth_archive.json`.
+- No Truth Social login, token, cookies, proxy, or browser automation.
+- PowerShell source schema, duplicate ID, and profile URL validation.
+- Append-only `docs/data/posts.jsonl` archive.
+- `docs/data/archive-summary.json` status and source metadata.
+- GitHub Pages client-side JSONL loading and search.
+- Incremental loading for every search match in 200-post batches.
+- Beginner-focused README instructions for obtaining the project, searching locally, updating data, publishing Pages, and troubleshooting.
+- Daily and manual GitHub Actions workflow.
+- Workflow failure gate for missing, error, or unexpected archive summary status.
+- Nonzero scraper exit when source or output processing fails.
 
 ## Validation
 
-Completed validation:
+Completed locally on August 20, 2026:
 
-```powershell
-$errors = $null; [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path .\scripts\Scrape-TruthSocialProfiles.ps1), [ref]$null, [ref]$errors)
-node --check docs\app.js
-```
+- CNN archive returned HTTP 200 with `application/json`.
+- Source contained 35,619 records and 35,619 unique post IDs.
+- All source URLs matched `https://truthsocial.com/@realDonaldTrump/<post_id>`.
+- Source covered February 14, 2022 through August 20, 2026.
+- First isolated run archived all 35,619 records.
+- Second isolated run added zero records.
+- JSONL contained 35,619 parseable lines and 35,619 unique IDs.
+- Populated JSONL was 36,604,807 bytes.
+- JSONL SHA-256 stayed unchanged on the second run.
+- No redundant JSON, CSV, or per-profile files were created.
+- Forced upstream 404 wrote an error summary and exited with code 1.
+- Local GitHub Pages test loaded all 35,619 posts from JSONL.
+- Search for `President` found 6,174 posts and initially rendered the first 200 results.
+- Browser validation for `iran` loaded 200, then 400, then all 534 matching posts.
+- PowerShell parser syntax passed.
+- JavaScript parser syntax passed.
+- Workflow YAML parsed successfully.
+- The error gate returned a nonzero exit code for an error summary.
+- Deleted the obsolete `TRUTHSOCIAL_BEARER_TOKEN` repository secret and confirmed no repository secrets remain.
 
-Results:
+## Known Issues
 
-- PowerShell syntax passed.
-- JavaScript syntax passed.
-- Seed `docs/data/posts.jsonl` parsed successfully.
-- Seed `docs/data/posts.json` parsed successfully.
-- Seed `docs/data/posts.csv` parsed successfully.
-- Seed `docs/data/archive-summary.json` parsed successfully.
-- Temporary anonymous scraper run with the known `403 Forbidden` condition wrote `archive-summary.json` with `status: "error"` and a bearer token guidance message.
-- Workflow text check confirmed `actions/checkout@v5`.
-- Workflow text check confirmed `git pull --rebase origin $env:GITHUB_REF_NAME` before `git push`.
-- Local static site served successfully at `http://127.0.0.1:8000/`.
-
-## Known Issue
-
-Truth Social returned `403 Forbidden` from this Codex environment for:
-
-```text
-https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_replies=true
-```
-
-The scraper now builds that exact endpoint shape by default.
-
-The scraper records this condition in `docs/data/archive-summary.json` and explains that `TRUTHSOCIAL_BEARER_TOKEN` or `-BearerToken` is required when anonymous access is blocked.
-
-A valid bearer token was not available in this session, so authenticated retrieval still needs validation.
+- The replacement workflow has not run on GitHub because the feature branch has not been merged.
+- The project depends on CNN's public archive remaining available and current.
+- Existing engagement counts are not refreshed because archived records are append-only.
 
 ## Next Recommended Work
 
-1. Get a valid Truth Social bearer token from an authenticated browser session.
-2. Run the scraper with `TRUTHSOCIAL_BEARER_TOKEN` set.
-3. Add `TRUTHSOCIAL_BEARER_TOKEN` as a GitHub repository secret.
-4. Run the GitHub Actions workflow manually.
-5. Confirm `docs/data/posts.jsonl`, `docs/data/posts.json`, `docs/data/posts.csv`, and `docs/data/archive-summary.json` update in the repo.
-6. Confirm the GitHub Pages search UI loads live archive data.
-7. Use local ignored `future-upgrades.md` as the active backlog.
+1. Open a pull request from `codex/public-trump-archive` to `main`.
+2. Validate repository checks.
+3. Merge the change.
+4. Dispatch the workflow manually.
+5. Confirm the GitHub Pages site loads the populated JSONL archive.
 
 ## Maintenance Rules
 
-Update this file whenever repo behavior, commands, config, workflow, data paths, validation status, known issues, or next steps change.
+Update this file and `changelog.md` whenever behavior, commands, config, workflows, data paths, validation status, known issues, or next steps change.
 
-Update `changelog.md` in the same pass.
-
-When a backlog item is completed, remove it from local `future-upgrades.md`, add it to `completed-upgrades.md`, and update this file and `changelog.md` in the same pass.
+Use local ignored `future-upgrades.md` for active backlog items. Move completed work to `completed-upgrades.md` when it ships.

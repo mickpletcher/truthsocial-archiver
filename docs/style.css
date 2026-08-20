@@ -124,6 +124,31 @@ select {
   gap: 12px;
 }
 
+.load-more {
+  display: flex;
+  margin-bottom: 16px;
+}
+
+.load-more[hidden] {
+  display: none;
+}
+
+.load-more button {
+  min-height: 42px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 8px 18px;
+}
+
+.load-more button:hover {
+  background: #115e59;
+}
+
 .post {
   border: 1px solid var(--line);
   border-radius: 8px;

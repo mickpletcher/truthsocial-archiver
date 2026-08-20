@@ -16,8 +16,6 @@
       <div class="downloads">
         <a href="data/archive-summary.json">Summary</a>
         <a href="data/posts.jsonl">JSONL</a>
-        <a href="data/posts.json">JSON</a>
-        <a href="data/posts.csv">CSV</a>
       </div>
     </header>
 
@@ -46,6 +44,9 @@
     </section>
 
     <div class="summary" id="summary">Loading archive...</div>
+    <div class="load-more" id="loadMoreContainer" hidden>
+      <button id="loadMoreButton" type="button" aria-controls="results">Load more</button>
+    </div>
     <section class="results" id="results" aria-live="polite"></section>
   </main>
 

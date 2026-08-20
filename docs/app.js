@@ -1,9 +1,10 @@
 const state = {
   posts: [],
-  filtered: []
+  filtered: [],
+  visibleCount: 0
 };
 
-const RESULT_RENDER_LIMIT = 200;
+const RESULT_BATCH_SIZE = 200;
 
 const searchInput = document.getElementById('search');
 const profileSelect = document.getElementById('profile');
@@ -11,6 +12,8 @@ const startDateInput = document.getElementById('startDate');
 const endDateInput = document.getElementById('endDate');
 const summary = document.getElementById('summary');
 const results = document.getElementById('results');
+const loadMoreContainer = document.getElementById('loadMoreContainer');
+const loadMoreButton = document.getElementById('loadMoreButton');
 const runStatus = document.getElementById('runStatus');
 
 function escapeHtml(value) {
@@ -122,18 +125,24 @@ function applyFilters() {
     return true;
   });
 
+  state.visibleCount = RESULT_BATCH_SIZE;
   renderResults();
 }
 
 function renderResults() {
   const query = searchInput.value.trim();
-  const visiblePosts = state.filtered.slice(0, RESULT_RENDER_LIMIT);
+  const visiblePosts = state.filtered.slice(0, state.visibleCount);
   const totalMatches = state.filtered.length;
   const renderedCount = visiblePosts.length;
+  const remainingCount = totalMatches - renderedCount;
 
-  summary.textContent = totalMatches > RESULT_RENDER_LIMIT
-    ? `Showing ${renderedCount.toLocaleString()} of ${totalMatches.toLocaleString()} matching posts. ${state.posts.length.toLocaleString()} total archived posts.`
-    : `${totalMatches.toLocaleString()} of ${state.posts.length.toLocaleString()} posts`;
+  summary.textContent = `Showing ${renderedCount.toLocaleString()} of ${totalMatches.toLocaleString()} matching posts. ${state.posts.length.toLocaleString()} total archived posts.`;
+
+  loadMoreContainer.hidden = remainingCount === 0;
+  if (remainingCount > 0) {
+    const nextBatchCount = Math.min(RESULT_BATCH_SIZE, remainingCount);
+    loadMoreButton.textContent = `Load ${nextBatchCount.toLocaleString()} more`;
+  }
 
   results.innerHTML = '';
 
@@ -183,11 +192,17 @@ function renderResults() {
   results.appendChild(fragment);
 }
 
+function loadMoreResults() {
+  state.visibleCount += RESULT_BATCH_SIZE;
+  renderResults();
+}
+
 function bindEvents() {
   searchInput.addEventListener('input', applyFilters);
   profileSelect.addEventListener('change', applyFilters);
   startDateInput.addEventListener('change', applyFilters);
   endDateInput.addEventListener('change', applyFilters);
+  loadMoreButton.addEventListener('click', loadMoreResults);
 }
 
 function formatRunTime(value) {
@@ -234,15 +249,25 @@ async function loadArchive() {
 
     searchInput.value = query;
 
-    const response = await fetch('data/posts.json', { cache: 'no-store' });
+    const response = await fetch('data/posts.jsonl', { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    const posts = await response.json();
-    state.posts = Array.isArray(posts)
-      ? posts.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')))
-      : [];
+    const lines = (await response.text())
+      .split(/\r?\n/)
+      .filter(line => line.trim());
+
+    state.posts = lines
+      .map((line, index) => {
+        try {
+          return JSON.parse(line);
+        }
+        catch {
+          throw new Error(`Invalid JSONL at line ${index + 1}`);
+        }
+      })
+      .sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
 
     updateProfileOptions();
     applyFilters();
@@ -250,6 +275,7 @@ async function loadArchive() {
   catch (error) {
     summary.textContent = 'Archive data could not be loaded.';
     results.innerHTML = `<p class="empty">${escapeHtml(error.message)}</p>`;
+    loadMoreContainer.hidden = true;
   }
 }
 

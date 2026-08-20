@@ -2,6 +2,60 @@
 
 Completed repo upgrades are recorded here after they ship.
 
+## 2026-08-20
+
+### Public Trump Post Archive
+
+Status: Published on feature branch
+
+Summary:
+
+- Replaced the blocked Truth Social API with CNN's public Trump Truth Social archive.
+- Limited the project to `https://truthsocial.com/@realDonaldTrump`.
+- Removed all login, bearer token, cookie, proxy, and direct API requirements.
+- Changed storage to one append-only JSONL archive and one run summary.
+- Updated the GitHub Pages app to load JSONL directly.
+- Added incremental loading so every matching post is reachable in 200-post batches.
+- Rewrote the README with novice-focused setup, search, update, Pages, and troubleshooting instructions.
+- Added a post scrape workflow gate that reads `docs/data/archive-summary.json`.
+- Failed the GitHub Actions job when the summary is missing, reports `status: "error"`, or contains an unexpected status.
+- Made scraper failures write an error summary and exit nonzero.
+- Removed redundant JSON, CSV, and per-profile output files.
+
+Changed files:
+
+- `.github/workflows/scrape.yml`
+- `config/profiles.txt`
+- `scripts/Scrape-TruthSocialProfiles.ps1`
+- `docs/app.js`
+- `docs/index.html`
+- `docs/style.css`
+- `docs/data/posts.json`
+- `docs/data/posts.csv`
+- `README.md`
+- `assessment.md`
+- `changelog.md`
+- `completed-upgrades.md`
+- `prompts/01-Build-TruthSocial-Archive.md`
+- `.gitignore`
+
+Validation:
+
+- Confirmed 52 scheduled GitHub Actions runs from June 30 through August 20, 2026 all reported success while archiving zero posts.
+- Confirmed the manual bearer-token workflow run still returned `403 Forbidden` from `windows-latest`.
+- Confirmed the public source contained 35,619 records, 35,619 unique IDs, and no wrong-profile URLs.
+- Confirmed the first isolated run archived all records.
+- Confirmed the second isolated run added zero records and left the JSONL hash unchanged.
+- Confirmed a forced upstream 404 wrote an error summary and exited with code 1.
+- Confirmed the local Pages site loaded all 35,619 posts and returned 6,174 matches for `President`.
+- Confirmed the `iran` search loaded 200, then 400, then all 534 matching posts.
+- Confirmed the workflow gate returns a nonzero exit code for the current error summary.
+- Deleted the obsolete `TRUTHSOCIAL_BEARER_TOKEN` repository secret and confirmed no repository secrets remain.
+
+Known issue:
+
+- Merge and GitHub-hosted workflow validation are still pending.
+
 ## 2026-06-30
 
 ### Truth Social Auth Header Support
