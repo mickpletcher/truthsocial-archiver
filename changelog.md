@@ -2,6 +2,54 @@
 
 All notable repo changes are logged here.
 
+## 2026-08-20
+
+### Added
+
+- Added a GitHub Actions gate that reads `docs/data/archive-summary.json` after the scraper runs.
+- Added explicit job failures for a missing summary, `status: "error"`, or an unexpected summary status.
+- Added ingestion from CNN's public Trump Truth Social JSON archive.
+- Added source URL and source modification metadata to the archive summary.
+- Added client-side JSONL loading to the GitHub Pages search app.
+
+### Changed
+
+- Limited the project to Donald J. Trump's public profile.
+- Replaced direct Truth Social API requests with a no-login public archive source.
+- Changed storage to one append-only `docs/data/posts.jsonl` file plus the run summary.
+- Changed new post handling so existing post IDs are never overwritten.
+- Changed scraper failures to write an error summary and exit nonzero.
+- Added a `Load more` control so every search match is reachable in 200-post batches.
+- Rewrote the README as a novice-friendly guide for setup, local search, archive updates, GitHub Pages, and troubleshooting.
+- Updated README, assessment, completed upgrade tracking, and the build specification for the new design.
+
+### Removed
+
+- Removed bearer token, custom header, pagination, and direct Truth Social API behavior.
+- Removed the workflow reference to `TRUTHSOCIAL_BEARER_TOKEN`.
+- Removed redundant JSON, CSV, and per-profile archive outputs.
+
+### Verified
+
+- Confirmed all 52 scheduled runs from June 30 through August 20 completed successfully from GitHub Actions' point of view.
+- Confirmed those runs archived zero posts and repeatedly recorded the same `403 Forbidden` failure.
+- Confirmed a manual hosted-runner test still received `403 Forbidden` with a bearer token.
+- Confirmed the public archive returned 35,619 records with 35,619 unique IDs and no wrong-profile URLs.
+- Confirmed the first isolated run archived all 35,619 posts.
+- Confirmed the second isolated run added zero posts and did not change the JSONL SHA-256.
+- Confirmed no redundant data files were created.
+- Confirmed a forced upstream 404 wrote an error summary and exited with code 1.
+- Confirmed the local Pages site loaded all 35,619 posts and returned 6,174 matches for `President`.
+- Confirmed the `iran` search loaded 200, then 400, then all 534 matching posts.
+- Exercised the workflow error gate against the current error summary and confirmed it returns a nonzero exit code.
+- Deleted the obsolete `TRUTHSOCIAL_BEARER_TOKEN` repository secret and confirmed no repository secrets remain.
+- Published the replacement on the `codex/public-trump-archive` feature branch.
+
+### Known Issues
+
+- The replacement feature branch has not been merged or run in GitHub Actions.
+- Archive availability and update cadence depend on CNN's public dataset.
+
 ## 2026-06-30
 
 ### Added

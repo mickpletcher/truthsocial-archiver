@@ -1,226 +1,242 @@
 # truthsocial-archiver
 
-PowerShell archive tool for public Truth Social posts from profiles listed in a text file.
+A searchable, append-only archive of Donald J. Trump's public Truth Social posts.
 
-The scraper reads `config/profiles.txt`, resolves each profile, downloads public posts, merges them with existing archive data, deduplicates by post ID, and publishes JSONL, JSON, and CSV files for GitHub Pages.
+The project tracks only this public profile:
 
-## Profile List
-
-Edit `config/profiles.txt`.
-
-Each non-empty line is one profile. Lines starting with `#` are ignored.
-
-Supported values:
-
-```text
-107780257626128497
-@realDonaldTrump
-realDonaldTrump
 https://truthsocial.com/@realDonaldTrump
+
+No Truth Social account, password, bearer token, cookie, proxy, or self-hosted runner is needed.
+
+## What This Project Does
+
+- Downloads public Trump post data from CNN's Truth Social archive.
+- Stores each post as one line in a JSONL file.
+- Keeps existing archived posts and appends newly discovered posts.
+- Provides a simple website for text and date searches.
+- Runs automatically every day through GitHub Actions.
+- Fails the GitHub Actions job when an archive update fails.
+
+## Quick Start: Search the Archive Locally
+
+The archive data is already stored in the repository. You do not need to run the scraper just to search the existing posts.
+
+If you do not have the project yet, open the repository on GitHub, select **Code**, select **Download ZIP**, and extract the ZIP file. If Git is installed, you can clone it instead:
+
+```powershell
+git clone https://github.com/mickpletcher/truthsocial-archiver.git
+Set-Location .\truthsocial-archiver
 ```
 
-Use one designated profile or several. The archive will process every listed profile.
+### Requirements
 
-Account IDs are the most direct option because they skip profile lookup.
+- Windows 11, macOS, or Linux.
+- Python 3 for the local web server.
+- A modern web browser.
 
-## Output
+### Steps
 
-The scraper writes:
+1. Open PowerShell or the VS Code terminal in the repository folder.
+2. Start the local web server:
+
+   ```powershell
+   py -m http.server 8000 --directory .\docs
+   ```
+
+   On macOS or Linux, use:
+
+   ```bash
+   python3 -m http.server 8000 --directory ./docs
+   ```
+
+3. Open this address in your browser:
+
+   http://127.0.0.1:8000/
+
+4. Leave the terminal window open while using the site.
+5. Press `Ctrl+C` in the terminal when you are finished.
+
+Do not open `docs/index.html` by double-clicking it. Browsers often block the page from loading the JSONL file when the site is opened directly from the file system.
+
+## How to Search
+
+The website loads the complete archive into your browser and sorts posts newest first.
+
+- Enter a word or phrase in the **Search** box. Results update as you type.
+- Use **Start date** and **End date** to limit the date range.
+- The first 200 matching posts are displayed immediately.
+- Select **Load 200 more** below the result count to display the next batch.
+- Continue selecting the button until all matching posts are displayed.
+- Select **Original** on any result to open the post on Truth Social.
+- Select **First media** when available to open the first linked media item.
+
+You can also put a search in the address:
 
 ```text
-docs/data/posts.jsonl
-docs/data/posts.json
-docs/data/posts.csv
-docs/data/archive-summary.json
-docs/data/profiles/<profile>/posts.jsonl
-docs/data/profiles/<profile>/posts.json
-docs/data/profiles/<profile>/posts.csv
+http://127.0.0.1:8000/?q=iran
+http://127.0.0.1:8000/?q=supreme%20court
 ```
 
-`posts.jsonl` is the primary archive format.
+## Update the Archive Manually
 
-`posts.json` is generated for the GitHub Pages search UI.
+You only need this step when you want to check the public source for newer posts.
 
-`posts.csv` is generated for spreadsheet review.
+### Requirement
 
-`archive-summary.json` records the latest scraper run status.
+Install [PowerShell 7](https://learn.microsoft.com/powershell/scripting/install/installing-powershell) if the `pwsh` command is unavailable.
 
-Each profile also gets its own folder under `docs/data/profiles`.
+### Run the Update
 
-## Run Locally
-
-From the repo root:
+From the repository root:
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1
 ```
 
-Use a custom profile file:
+The script will:
+
+1. Validate that the configured profile is `@realDonaldTrump`.
+2. Download CNN's current public archive.
+3. Validate post IDs and original profile URLs.
+4. Read the existing JSONL archive.
+5. Append only post IDs that are not already stored.
+6. Write a summary of the run.
+7. Exit with an error if the download or validation fails.
+
+After it finishes, restart or refresh the local website. Use `Ctrl+F5` if the browser still shows older data or an older version of the page.
+
+### Test Without Changing the Main Archive
+
+Use a temporary output folder:
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -ProfilesPath .\config\profiles.txt
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -OutputRoot .\temp\archive-test
 ```
 
-Use a Truth Social bearer token when anonymous API requests are blocked:
+The `temp` folder is ignored by Git.
+
+## Search Directly from PowerShell
+
+The website is the easiest search method. This command is available if you prefer PowerShell:
 
 ```powershell
-$env:TRUTHSOCIAL_BEARER_TOKEN = '<token>'
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1
+Get-Content .\docs\data\posts.jsonl |
+    ForEach-Object { $_ | ConvertFrom-Json } |
+    Where-Object { $_.text -match 'iran' } |
+    Select-Object created_at, text, url
 ```
 
-Or pass it for one run:
+Replace `iran` with the word or regular expression you want to find.
 
-```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -BearerToken '<token>'
-```
+## Public Data Source
 
-Use a custom JSON header file if Truth Social requires additional request headers:
+The scraper downloads this public JSON dataset:
 
-```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -HeadersPath .\config\headers.local.json
-```
+https://ix.cnn.io/data/truth-social/truth_archive.json
 
-Example `headers.local.json`:
+The source includes public post IDs, timestamps, text, original Truth Social URLs, engagement counts, and media URLs.
 
-```json
-{
-  "Authorization": "Bearer <token>",
-  "Referer": "https://truthsocial.com/@realDonaldTrump"
-}
-```
+CNN controls this dataset. This project does not control its availability, update schedule, or completeness. It is not a Truth Social API.
 
-Limit pages during testing:
+## Important Files
 
-```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -MaxPages 2
-```
+| File | Purpose |
+| --- | --- |
+| `docs/data/posts.jsonl` | Append-only post archive. Each non-empty line is one JSON post object. |
+| `docs/data/archive-summary.json` | Latest run time, status, source details, total posts, and newly added posts. |
+| `docs/index.html` | Search page. |
+| `docs/app.js` | Archive loading, filtering, highlighting, and result batching. |
+| `docs/style.css` | Search page styling. |
+| `scripts/Scrape-TruthSocialProfiles.ps1` | Archive update script. |
+| `config/profiles.txt` | Fixed public profile configuration. |
+| `.github/workflows/scrape.yml` | Daily and manually triggered GitHub Actions workflow. |
 
-Set an explicit page size if needed:
+Do not manually combine or reformat `posts.jsonl`. One complete JSON object must remain on each line.
 
-```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\scripts\Scrape-TruthSocialProfiles.ps1 -Limit 40
-```
+## Automatic Daily Updates
 
-## How It Works
-
-For each entry in `config/profiles.txt`, the scraper:
-
-1. Resolves the profile to a Truth Social account ID.
-2. Falls back to public profile page metadata when API lookup is blocked.
-3. Calls the public statuses endpoint for that account.
-4. Pages backward with `max_id`.
-5. Loads existing archive data if present.
-6. Merges old and new posts.
-7. Deduplicates by post ID.
-8. Sorts newest first.
-9. Exports JSONL, JSON, CSV, and the run summary.
-
-The status endpoint format is:
-
-```text
-https://truthsocial.com/api/v1/accounts/<account_id>/statuses
-```
-
-Default query parameters:
-
-```text
-exclude_replies=true
-max_id=<oldest_previous_post_id>
-```
-
-`limit` is only added when you pass `-Limit`.
-
-## GitHub Actions
-
-`.github/workflows/scrape.yml` runs daily at 6 AM UTC and can also be started manually.
+The workflow in `.github/workflows/scrape.yml` runs every day at 06:00 UTC. It can also be started manually from the repository's **Actions** tab.
 
 The workflow:
 
-1. Checks out the repo.
-2. Runs the scraper on `windows-latest`.
-3. Commits changes only when files under `docs/data` changed.
+1. Runs the PowerShell scraper on `windows-latest`.
+2. Checks `docs/data/archive-summary.json` for a successful status.
+3. Shows a failed GitHub Actions run if the scraper or summary reports an error.
+4. Commits changes under `docs/data` when new archive data exists.
 
-No paid service is required.
+No GitHub repository secret is used.
 
-No secret is required only when Truth Social allows anonymous API access from the runner.
+## Publish with GitHub Pages
 
-If the run returns `403 Forbidden`, add a repository secret named `TRUTHSOCIAL_BEARER_TOKEN` and pass it to the scraper:
+To publish the search page from this repository:
 
-```yaml
-env:
-  TRUTHSOCIAL_BEARER_TOKEN: ${{ secrets.TRUTHSOCIAL_BEARER_TOKEN }}
-```
+1. Open the repository on GitHub.
+2. Select **Settings**.
+3. Select **Pages**.
+4. Under **Build and deployment**, select **Deploy from a branch**.
+5. Select the default branch and the `/docs` folder.
+6. Save the settings and wait for the Pages deployment to finish.
 
-## Change Log
+The expected site address is:
 
-Every repo change should be recorded in `changelog.md`.
+https://mickpletcher.github.io/truthsocial-archiver/
 
-When changing behavior, commands, config, workflows, data paths, or docs, update the changelog in the same pass.
-
-## Assessment
-
-Current repo status, validation results, known issues, and next steps are tracked in `assessment.md`.
-
-Update `assessment.md` when behavior, commands, config, workflows, data paths, validation status, known issues, or next steps change.
-
-## Upgrade Tracking
-
-Completed work is tracked in `completed-upgrades.md`.
-
-Future work is tracked locally in `future-upgrades.md`.
-
-`future-upgrades.md` is ignored by Git because it is an active planning backlog.
-
-When a future item ships, remove it from `future-upgrades.md`, add it to `completed-upgrades.md`, and update `changelog.md` and `assessment.md` in the same pass.
-
-## GitHub Pages
-
-Enable Pages in GitHub:
-
-1. Open repo settings.
-2. Go to Pages.
-3. Set source to `Deploy from a branch`.
-4. Select the default branch.
-5. Select `/docs`.
-
-The search app is in `docs/index.html`.
-
-Example URLs:
+Example published searches:
 
 ```text
-https://mickpletcher.github.io/truthsocial-archiver/
 https://mickpletcher.github.io/truthsocial-archiver/?q=iran
 https://mickpletcher.github.io/truthsocial-archiver/?q=supreme%20court
 ```
 
-## Search UI
+## Troubleshooting
 
-The web UI can filter by:
+### `py` Is Not Recognized
 
-1. Text
-2. Profile
-3. Start date
-4. End date
-5. Original post URL
+Install Python 3, reopen the terminal, and try the command again. If your system uses `python` instead of `py`, run:
 
-It loads `docs/data/posts.json`.
+```powershell
+python -m http.server 8000 --directory .\docs
+```
 
-It loads `docs/data/archive-summary.json` for the last run status badge.
+On macOS or Linux, the command is usually:
 
-Use `docs/data/posts.jsonl` as the canonical archive source for automation.
+```powershell
+python3 -m http.server 8000 --directory ./docs
+```
+
+### The Browser Says It Cannot Connect
+
+Make sure the local server command is still running. Then open `http://127.0.0.1:8000/`, not an HTTPS address.
+
+### The Page Opens but the Archive Does Not Load
+
+Start the server from the repository root and include `--directory .\docs`. Confirm these files exist:
+
+```text
+docs/data/posts.jsonl
+docs/data/archive-summary.json
+```
+
+### The Search Still Stops at 200 Results
+
+Select **Load 200 more** below the result count. If the button is missing after a recent code update, press `Ctrl+F5` to force the browser to reload `app.js`.
+
+### The Scraper Reports an Error
+
+Read `docs/data/archive-summary.json` for the status and error details. A failed run does not mean a Truth Social login is required. It usually means the public source was unavailable or its data failed validation.
 
 ## Limitations
 
-This uses Truth Social endpoints that can be visible from the public web app.
+- Only public posts from `@realDonaldTrump` are included.
+- CNN controls the upstream archive cadence, availability, and completeness.
+- Existing records are append-only and are never overwritten.
+- Engagement counts are snapshots and are not refreshed after a post is first archived.
+- Deleted or edited upstream posts remain in the local archive.
+- Media files are linked. They are not copied, transcribed, or processed with OCR.
+- This is not an official Truth Social client or API integration.
 
-Endpoint behavior may change.
+## Maintainer Notes
 
-The statuses endpoint may return `403 Forbidden` from some environments unless a valid bearer token or required request headers are supplied.
+Update `assessment.md` and `changelog.md` whenever behavior, commands, configuration, workflows, data paths, or known limitations change.
 
-Only public posts are archived.
-
-Private content is not archived.
-
-Media files are linked as metadata. Media OCR and transcription are not included.
-
-This is not an official Truth Social API client.
+Record completed work in `completed-upgrades.md`. Keep active backlog items in the ignored local `future-upgrades.md` file.

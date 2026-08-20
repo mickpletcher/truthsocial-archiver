@@ -1,21 +1,23 @@
 {
-  "run_at": "2026-08-20T16:54:01.9562734Z",
-  "status": "error",
+  "run_at": "2026-08-20T18:40:50.8654403Z",
+  "status": "ok",
+  "source_url": "https://ix.cnn.io/data/truth-social/truth_archive.json",
+  "source_last_modified": "Thu, 20 Aug 2026 18:28:32 GMT",
   "profile_count": 1,
-  "total_posts": 0,
-  "new_posts": 0,
+  "total_posts": 35619,
+  "new_posts": 35619,
   "profiles": [
     {
-      "input": "107780257626128497",
+      "input": "https://truthsocial.com/@realDonaldTrump",
       "account_id": "107780257626128497",
-      "username": "107780257626128497",
-      "display_name": "107780257626128497",
-      "status": "error",
-      "total_posts": 0,
+      "username": "realDonaldTrump",
+      "display_name": "Donald J. Trump",
+      "status": "ok",
+      "total_posts": 35619,
       "existing_posts": 0,
-      "fetched_posts": 0,
-      "new_posts": 0,
-      "message": "Truth Social request failed with HTTP 403: https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_replies=true. Anonymous API access is blocked from this environment. Set TRUTHSOCIAL_BEARER_TOKEN or pass -BearerToken with a valid Truth Social bearer token."
+      "fetched_posts": 35619,
+      "new_posts": 35619,
+      "message": null
     }
   ]
 }
