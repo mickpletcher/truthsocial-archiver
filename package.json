@@ -1,0 +1,27 @@
+{
+  "name": "truth-social-archive-desktop",
+  "productName": "Truth Social Archive",
+  "version": "1.0.0",
+  "description": "Searchable desktop archive of Donald J. Trump's public Truth Social posts.",
+  "main": "desktop/main.js",
+  "author": "Mick Pletcher",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make",
+    "test": "node --test tests/*.test.js",
+    "test:electron": "node scripts/test-electron.mjs",
+    "check": "node --check desktop/archive-store.js && node --check desktop/main.js && node --check desktop/preload.js && node --check docs/app.js && node --check forge.config.js && node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "1.0.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "7.11.2",
+    "@electron-forge/maker-dmg": "7.11.2",
+    "@electron-forge/maker-squirrel": "7.11.2",
+    "electron": "44.0.0",
+    "playwright": "1.62.1"
+  }
+}

@@ -13,6 +13,15 @@ docs/data/archive-summary.json
 docs/index.html
 docs/app.js
 docs/style.css
+desktop/archive-store.js
+desktop/main.js
+desktop/preload.js
+tests/archive-store.test.js
+scripts/test-electron.mjs
+package.json
+package-lock.json
+forge.config.js
+.github/workflows/desktop-build.yml
 README.md
 changelog.md
 assessment.md
@@ -53,7 +62,12 @@ Create `scripts/Scrape-TruthSocialProfiles.ps1`.
 The scraper must:
 
 - Read `config/profiles.txt` by default.
-- Accept `-ProfilesPath`, `-OutputRoot`, and `-SourceUrl`.
+- Accept `-ProfilesPath`, `-OutputRoot`, `-SourceUrl`, `-RepositoryDataUrl`, and `-UpdateFromSource`.
+- On a local run, compare the local archive with the current archive in this project's GitHub repository.
+- Download and validate a newer repository JSONL file before replacing local archive files.
+- Never replace a local JSONL file with a repository archive containing fewer posts.
+- Require no Git installation for local archive synchronization.
+- Use upstream source-update behavior in GitHub Actions or when `-UpdateFromSource` is supplied.
 - Convert source posts into the local archive schema.
 - Preserve post ID, text, raw content, timestamp, original URL, engagement counts, and media URLs.
 - Add profile account ID, username, and display name.
@@ -108,6 +122,26 @@ The site must:
 Update `changelog.md` and `assessment.md` in the same pass as every behavior or data path change.
 
 Track shipped work in `completed-upgrades.md`. Keep active backlog items in ignored local `future-upgrades.md`.
+
+## Desktop Application
+
+Create an Electron desktop application that reuses the static search interface.
+
+The desktop application must:
+
+- Require no PowerShell, Python, Node.js, Git, or Truth Social account for normal use.
+- Include the repository archive as an offline seed.
+- Store a validated archive cache under the current user's application data folder.
+- Check GitHub for a newer archive at startup and through a visible refresh control.
+- Never replace a local archive with fewer posts.
+- Validate expected count, JSON, unique IDs, and exact Trump profile URLs before replacement.
+- Preserve the current cache when a download or validation fails.
+- Keep Node.js integration disabled, enable context isolation and renderer sandboxing, deny permissions, and block untrusted navigation.
+- Open external HTTPS links in the system browser.
+- Build a Windows x64 Squirrel `Setup.exe`.
+- Build separate macOS arm64 and x64 DMGs on native GitHub-hosted runners.
+- Label artifacts as unsigned until code signing and Apple notarization are configured.
+- Run unit tests, Electron window tests, packaged smoke tests, a packaged dependency audit, and SHA-256 checksum generation in CI.
 
 ## Quality Requirements
 

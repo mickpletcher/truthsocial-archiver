@@ -24,6 +24,10 @@ Thumbs.db
 .cache/
 coverage/
 TestResults/
+node_modules/
+out/
+output/
+electron-windows-sign.log
 
 # Local planning backlog
 future-upgrades.md

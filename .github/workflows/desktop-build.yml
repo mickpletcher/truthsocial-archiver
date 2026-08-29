@@ -1,0 +1,169 @@
+name: Build Desktop Installers
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/desktop-build.yml'
+      - 'desktop/**'
+      - 'docs/app.js'
+      - 'docs/index.html'
+      - 'docs/style.css'
+      - 'forge.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/test-electron.mjs'
+      - 'tests/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/desktop-build.yml'
+      - 'desktop/**'
+      - 'docs/app.js'
+      - 'docs/index.html'
+      - 'docs/style.css'
+      - 'forge.config.js'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/test-electron.mjs'
+      - 'tests/**'
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows x64 EXE
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run checks
+        run: npm run check
+
+      - name: Audit packaged dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Test Electron window
+        run: npm run test:electron
+
+      - name: Build Windows installer
+        run: npm run make -- --arch=x64
+
+      - name: Smoke test packaged executable
+        shell: pwsh
+        run: |
+          $executable = Get-ChildItem -Path out -Filter TruthSocialArchive.exe -File -Recurse |
+            Where-Object { $_.FullName -notmatch '[\\/]make[\\/]' } |
+            Select-Object -First 1
+
+          if (-not $executable) {
+            throw 'Packaged TruthSocialArchive.exe was not found.'
+          }
+
+          $env:TRUTH_ARCHIVE_TEST_USER_DATA = Join-Path $env:RUNNER_TEMP 'truth-archive-smoke'
+          $process = Start-Process -FilePath $executable.FullName -ArgumentList '--smoke-test', '--no-sandbox' -PassThru -WindowStyle Hidden
+          if (-not $process.WaitForExit(60000)) {
+            $process.Kill($true)
+            throw 'Packaged smoke test exceeded 60 seconds.'
+          }
+          if ($process.ExitCode -ne 0) {
+            throw "Packaged smoke test failed with exit code $($process.ExitCode)."
+          }
+
+      - name: Write SHA-256 checksums
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path out/make -File -Recurse | Sort-Object FullName
+          $lines = foreach ($file in $files) {
+            $relative = [IO.Path]::GetRelativePath((Resolve-Path 'out/make'), $file.FullName).Replace('\', '/')
+            $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $file.FullName).Hash.ToLowerInvariant()
+            "$hash  $relative"
+          }
+          $lines | Set-Content -LiteralPath 'out/make/SHA256SUMS.txt' -Encoding utf8
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: truth-social-archive-windows-x64-unsigned
+          path: out/make/**
+          if-no-files-found: error
+
+  macos:
+    name: macOS ${{ matrix.arch }} DMG
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x64
+            runner: macos-15-intel
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run checks
+        run: npm run check
+
+      - name: Audit packaged dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Test Electron window
+        run: npm run test:electron
+
+      - name: Build macOS disk image
+        run: npm run make -- --arch=${{ matrix.arch }}
+
+      - name: Smoke test packaged application
+        run: |
+          export TRUTH_ARCHIVE_TEST_USER_DATA="$RUNNER_TEMP/truth-archive-smoke"
+          executable="$(find out -path '*.app/Contents/MacOS/TruthSocialArchive' -type f | head -n 1)"
+          test -n "$executable"
+          "$executable" --smoke-test
+
+      - name: Write SHA-256 checksums
+        run: |
+          checksums="$RUNNER_TEMP/SHA256SUMS.txt"
+          find out/make -type f -print0 | sort -z | xargs -0 shasum -a 256 > "$checksums"
+          mv "$checksums" out/make/SHA256SUMS.txt
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: truth-social-archive-macos-${{ matrix.arch }}-unsigned
+          path: out/make/**
+          if-no-files-found: error
