@@ -18,6 +18,7 @@ Summary:
 - Added native Apple silicon and Intel DMG jobs using GitHub-hosted macOS runners.
 - Added renderer isolation, permission denial, navigation restrictions, and an allowlisted archive protocol.
 - Added deterministic dependencies, unit tests, Electron window tests, packaged smoke tests, runtime dependency auditing, and artifact checksums.
+- Pinned `upload-artifact` v7.0.1 by full commit SHA to keep artifact uploads on Node 24.
 
 Changed files:
 

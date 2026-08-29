@@ -34,6 +34,7 @@ The local working tree now adds two consumer paths. The PowerShell script synchr
 - Sandboxed renderer, context isolation, disabled Node.js integration, denied permissions, blocked navigation, and an allowlisted archive protocol.
 - Desktop archive cache replacement that validates all downloaded records and preserves the prior cache on failure.
 - Automated Node tests, Electron window tests, packaged smoke tests, runtime dependency audit, and artifact checksums.
+- SHA-pinned `upload-artifact` v7.0.1 using the supported Node 24 action runtime.
 
 ## Validation
 
@@ -77,6 +78,7 @@ Completed on August 29, 2026:
 - Built `TruthSocialArchiveSetup.exe` locally on Windows x64.
 - Confirmed a complete Windows installer was generated locally and passed the packaged archive smoke test.
 - Confirmed the packaged runtime dependency audit reports zero known vulnerabilities at high or critical severity. Development-only Forge tooling still has upstream advisories.
+- Replaced the deprecated Node 20 artifact uploader with the official Node 24 `upload-artifact` v7.0.1 release.
 
 ## Known Issues
 
