@@ -5,6 +5,7 @@ const state = {
 };
 
 const RESULT_BATCH_SIZE = 200;
+const desktopApi = window.truthArchiveDesktop || null;
 
 const searchInput = document.getElementById('search');
 const profileSelect = document.getElementById('profile');
@@ -15,6 +16,13 @@ const results = document.getElementById('results');
 const loadMoreContainer = document.getElementById('loadMoreContainer');
 const loadMoreButton = document.getElementById('loadMoreButton');
 const runStatus = document.getElementById('runStatus');
+const desktopStatus = document.getElementById('desktopStatus');
+const refreshArchiveButton = document.getElementById('refreshArchive');
+const openArchiveFolderButton = document.getElementById('openArchiveFolder');
+
+function getDataUrl(fileName) {
+  return desktopApi ? `archive://data/${fileName}` : `data/${fileName}`;
+}
 
 function escapeHtml(value) {
   return String(value ?? '')
@@ -83,15 +91,26 @@ function highlight(text, query) {
 }
 
 function updateProfileOptions() {
+  const selectedProfile = profileSelect.value;
   const profiles = [...new Set(state.posts.map(getProfileLabel))]
     .filter(Boolean)
     .sort((a, b) => a.localeCompare(b));
+
+  profileSelect.replaceChildren();
+  const allProfiles = document.createElement('option');
+  allProfiles.value = '';
+  allProfiles.textContent = 'All profiles';
+  profileSelect.appendChild(allProfiles);
 
   for (const profile of profiles) {
     const option = document.createElement('option');
     option.value = profile;
     option.textContent = profile;
     profileSelect.appendChild(option);
+  }
+
+  if (profiles.includes(selectedProfile)) {
+    profileSelect.value = selectedProfile;
   }
 }
 
@@ -220,7 +239,7 @@ function formatRunTime(value) {
 
 async function loadArchiveSummary() {
   try {
-    const response = await fetch('data/archive-summary.json', { cache: 'no-store' });
+    const response = await fetch(getDataUrl('archive-summary.json'), { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
@@ -249,7 +268,7 @@ async function loadArchive() {
 
     searchInput.value = query;
 
-    const response = await fetch('data/posts.jsonl', { cache: 'no-store' });
+    const response = await fetch(getDataUrl('posts.jsonl'), { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
@@ -279,6 +298,54 @@ async function loadArchive() {
   }
 }
 
+function setDesktopStatus(stateName, message) {
+  desktopStatus.hidden = false;
+  desktopStatus.className = `desktop-status ${stateName}`;
+  desktopStatus.textContent = message;
+  refreshArchiveButton.disabled = stateName === 'checking';
+}
+
+function configureDesktop() {
+  if (!desktopApi) {
+    return;
+  }
+
+  for (const element of document.querySelectorAll('[data-web-only]')) {
+    element.hidden = true;
+  }
+
+  refreshArchiveButton.hidden = false;
+  openArchiveFolderButton.hidden = false;
+  setDesktopStatus('pending', 'Using the bundled archive while GitHub is checked for updates.');
+
+  refreshArchiveButton.addEventListener('click', async () => {
+    try {
+      await desktopApi.refreshArchive();
+    }
+    catch (error) {
+      setDesktopStatus('error', `Update failed. Existing archive preserved. ${error.message}`);
+    }
+  });
+
+  openArchiveFolderButton.addEventListener('click', async () => {
+    try {
+      await desktopApi.openArchiveFolder();
+      setDesktopStatus('current', 'Archive folder opened.');
+    }
+    catch (error) {
+      setDesktopStatus('error', `Archive folder could not be opened. ${error.message}`);
+    }
+  });
+
+  desktopApi.onSyncStatus(async payload => {
+    setDesktopStatus(payload.state, payload.message);
+    if (payload.reload) {
+      await Promise.all([loadArchiveSummary(), loadArchive()]);
+    }
+  });
+}
+
+configureDesktop();
 bindEvents();
 loadArchiveSummary();
 loadArchive();

@@ -2,6 +2,92 @@
 
 Completed repo upgrades are recorded here after they ship.
 
+## 2026-08-29
+
+### Windows and macOS Desktop Packaging
+
+Status: Implemented and validated on Windows
+
+Summary:
+
+- Added an Electron desktop application for users who do not know PowerShell or Python.
+- Reused the searchable archive interface with desktop update and cache-folder controls.
+- Bundled an offline JSONL snapshot and added validated GitHub archive updates at startup.
+- Preserved the prior cache on connection, count, schema, duplicate ID, or profile URL failures.
+- Added a Windows x64 Squirrel installer.
+- Added native Apple silicon and Intel DMG jobs using GitHub-hosted macOS runners.
+- Added renderer isolation, permission denial, navigation restrictions, and an allowlisted archive protocol.
+- Added deterministic dependencies, unit tests, Electron window tests, packaged smoke tests, runtime dependency auditing, and artifact checksums.
+
+Changed files:
+
+- `.github/workflows/desktop-build.yml`
+- `.gitignore`
+- `desktop/archive-store.js`
+- `desktop/main.js`
+- `desktop/preload.js`
+- `docs/app.js`
+- `docs/index.html`
+- `docs/style.css`
+- `forge.config.js`
+- `package.json`
+- `package-lock.json`
+- `scripts/test-electron.mjs`
+- `tests/archive-store.test.js`
+- `README.md`
+- `assessment.md`
+- `changelog.md`
+- `completed-upgrades.md`
+- `prompts/01-Build-TruthSocial-Archive.md`
+
+Validation:
+
+- Passed five archive-store tests.
+- Passed desktop JavaScript syntax checks.
+- Passed the Electron UI test at standard and small window sizes without horizontal overflow.
+- Exercised search, profile, date range, load-more, refresh, and post-link behavior.
+- Built `TruthSocialArchiveSetup.exe` on Windows x64.
+- Confirmed the Windows installer was generated and passed the packaged archive smoke test.
+- Confirmed the packaged runtime dependency audit reports zero known high or critical vulnerabilities.
+
+Remaining external validation:
+
+- Run the macOS arm64 and x64 jobs after the branch is pushed.
+- Configure Windows and Apple signing credentials before public release.
+
+### Local GitHub Archive Synchronization
+
+Status: Implemented and validated locally
+
+Summary:
+
+- Made normal local PowerShell runs synchronize the archive published by this GitHub repository.
+- Kept upstream CNN ingestion for GitHub Actions and explicit `-UpdateFromSource` runs.
+- Supported ZIP downloads without requiring Git or `git pull`.
+- Downloaded newer JSONL data to a temporary file and validated it before replacement.
+- Preserved a local archive when it contained more posts than the current GitHub snapshot.
+- Failed without changing local archive files when the repository download was unavailable or invalid.
+
+Changed files:
+
+- `scripts/Scrape-TruthSocialProfiles.ps1`
+- `README.md`
+- `assessment.md`
+- `changelog.md`
+- `completed-upgrades.md`
+- `prompts/01-Build-TruthSocial-Archive.md`
+
+Validation:
+
+- Synchronized 35,919 validated records into an empty isolated folder.
+- Replaced a stale 35,619-record clone with the validated 35,919-record GitHub archive.
+- Repeated synchronization without changing the JSONL SHA-256.
+- Forced a repository connection failure and confirmed both local archive files remained unchanged.
+- Confirmed explicit `-UpdateFromSource` bypassed repository synchronization.
+- Exercised the GitHub Actions source-update path against CNN and produced 35,930 records.
+- Confirmed no-downgrade handling preserved the larger 35,930-record local test archive.
+- Passed PowerShell syntax parsing.
+
 ## 2026-08-20
 
 ### Public Trump Post Archive

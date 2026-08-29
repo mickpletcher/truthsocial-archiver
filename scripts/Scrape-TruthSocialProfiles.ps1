@@ -2,7 +2,9 @@
 param(
     [string]$ProfilesPath,
     [string]$OutputRoot,
-    [string]$SourceUrl = 'https://ix.cnn.io/data/truth-social/truth_archive.json'
+    [string]$SourceUrl = 'https://ix.cnn.io/data/truth-social/truth_archive.json',
+    [string]$RepositoryDataUrl = 'https://raw.githubusercontent.com/mickpletcher/truthsocial-archiver/main/docs/data',
+    [switch]$UpdateFromSource
 )
 
 $ErrorActionPreference = 'Stop'
@@ -280,6 +282,225 @@ function Add-JsonLines {
         Add-Content -LiteralPath $Path -Encoding utf8
 }
 
+function ConvertFrom-WebContent {
+    param(
+        [Parameter(Mandatory)]
+        $Content
+    )
+
+    if ($Content -is [byte[]]) {
+        return [Text.Encoding]::UTF8.GetString($Content)
+    }
+
+    [string]$Content
+}
+
+function Get-JsonLineCount {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return 0
+    }
+
+    $count = 0L
+    foreach ($line in [IO.File]::ReadLines($Path)) {
+        if (-not [string]::IsNullOrWhiteSpace($line)) {
+            $count++
+        }
+    }
+
+    $count
+}
+
+function Get-RepositoryArchiveSummary {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Url
+    )
+
+    $response = Invoke-WebRequest -Uri $Url -Headers @{
+        Accept          = 'application/json'
+        'Cache-Control' = 'no-cache'
+    } -TimeoutSec 120
+    $content = ConvertFrom-WebContent -Content $response.Content
+    $summary = $content | ConvertFrom-Json -DateKind String
+
+    if ($summary.status -ne 'ok') {
+        throw "Repository archive summary reported status '$($summary.status)'."
+    }
+
+    if (-not $summary.run_at) {
+        throw 'Repository archive summary is missing run_at.'
+    }
+
+    $totalPosts = 0L
+    if (-not [long]::TryParse([string]$summary.total_posts, [ref]$totalPosts) -or $totalPosts -lt 1) {
+        throw "Repository archive summary has invalid total_posts '$($summary.total_posts)'."
+    }
+
+    $profiles = @($summary.profiles)
+    if ($profiles.Count -ne 1 -or [string]$profiles[0].username -ne $Profile.Username) {
+        throw 'Repository archive summary does not describe @realDonaldTrump.'
+    }
+
+    $runAt = [datetimeoffset]::Parse(
+        [string]$summary.run_at,
+        [Globalization.CultureInfo]::InvariantCulture,
+        [Globalization.DateTimeStyles]::AssumeUniversal
+    )
+
+    [pscustomobject]@{
+        Content    = $content
+        RunAt      = $runAt
+        TotalPosts = $totalPosts
+    }
+}
+
+function Test-RepositoryArchiveFile {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter(Mandatory)]
+        [long]$ExpectedPostCount
+    )
+
+    $seenIds = @{}
+    $postCount = 0L
+    $lineNumber = 0L
+
+    foreach ($line in [IO.File]::ReadLines($Path)) {
+        $lineNumber++
+        if ([string]::IsNullOrWhiteSpace($line)) {
+            continue
+        }
+
+        try {
+            $post = $line | ConvertFrom-Json -DateKind String
+        }
+        catch {
+            throw "Downloaded repository archive contains invalid JSON on line $lineNumber."
+        }
+
+        $id = [string]$post.id
+        if (-not $id) {
+            throw "Downloaded repository archive contains a post without an ID on line $lineNumber."
+        }
+
+        if ([string]$post.url -ne "$($Profile.Url)/$id") {
+            throw "Downloaded repository archive contains an unexpected post URL on line $lineNumber."
+        }
+
+        if ($seenIds.ContainsKey($id)) {
+            throw "Downloaded repository archive contains duplicate post ID $id."
+        }
+
+        $seenIds[$id] = $true
+        $postCount++
+    }
+
+    if ($postCount -ne $ExpectedPostCount) {
+        throw "Downloaded repository archive contains $postCount posts; expected $ExpectedPostCount."
+    }
+
+    $postCount
+}
+
+function Sync-RepositoryArchive {
+    param(
+        [Parameter(Mandatory)]
+        [string]$DataUrl,
+
+        [Parameter(Mandatory)]
+        [string]$PostsPath,
+
+        [Parameter(Mandatory)]
+        [string]$SummaryPath
+    )
+
+    $baseUrl = $DataUrl.TrimEnd('/')
+    $remoteSummary = Get-RepositoryArchiveSummary -Url "$baseUrl/archive-summary.json"
+    $localPostCount = Get-JsonLineCount -Path $PostsPath
+    $localRunAt = $null
+
+    if (Test-Path -LiteralPath $SummaryPath) {
+        try {
+            $localSummary = Get-Content -Raw -LiteralPath $SummaryPath | ConvertFrom-Json -DateKind String
+            if ($localSummary.status -eq 'ok' -and $localSummary.run_at) {
+                $localRunAt = [datetimeoffset]::Parse(
+                    [string]$localSummary.run_at,
+                    [Globalization.CultureInfo]::InvariantCulture,
+                    [Globalization.DateTimeStyles]::AssumeUniversal
+                )
+            }
+            else {
+                Write-Warning 'The local archive summary is not successful. The repository summary will replace it when the post counts match.'
+            }
+        }
+        catch {
+            Write-Warning 'The local archive summary is invalid. The repository summary will replace it.'
+        }
+    }
+
+    if ($remoteSummary.TotalPosts -lt $localPostCount) {
+        Write-Host "Local archive has $localPostCount posts, which is newer than the repository archive with $($remoteSummary.TotalPosts) posts. No files were replaced."
+        return
+    }
+
+    $downloadPosts = $remoteSummary.TotalPosts -gt $localPostCount -or -not (Test-Path -LiteralPath $PostsPath)
+    $updateSummary = $downloadPosts -or -not $localRunAt -or $remoteSummary.RunAt -gt $localRunAt
+
+    if (-not $downloadPosts -and -not $updateSummary) {
+        Write-Host "Local archive is current with $localPostCount posts."
+        return
+    }
+
+    $temporaryId = [guid]::NewGuid().ToString('N')
+    $outputDirectory = Split-Path -Parent $PostsPath
+    $temporaryPostsPath = Join-Path $outputDirectory ".posts.$temporaryId.tmp"
+    $temporarySummaryPath = Join-Path $outputDirectory ".archive-summary.$temporaryId.tmp"
+
+    try {
+        if ($downloadPosts) {
+            Write-Host "Downloading newer repository archive with $($remoteSummary.TotalPosts) posts."
+            Invoke-WebRequest -Uri "$baseUrl/posts.jsonl" -Headers @{
+                Accept          = 'application/x-ndjson, application/json, text/plain'
+                'Cache-Control' = 'no-cache'
+            } -TimeoutSec 120 -OutFile $temporaryPostsPath
+            Test-RepositoryArchiveFile -Path $temporaryPostsPath -ExpectedPostCount $remoteSummary.TotalPosts | Out-Null
+        }
+
+        [IO.File]::WriteAllText(
+            $temporarySummaryPath,
+            $remoteSummary.Content,
+            [Text.UTF8Encoding]::new($false)
+        )
+
+        if ($downloadPosts) {
+            [IO.File]::Move($temporaryPostsPath, $PostsPath, $true)
+        }
+
+        [IO.File]::Move($temporarySummaryPath, $SummaryPath, $true)
+
+        if ($downloadPosts) {
+            Write-Host "Local archive updated from $localPostCount to $($remoteSummary.TotalPosts) posts."
+        }
+        else {
+            Write-Host "Local archive data is current with $localPostCount posts. Updated the run summary."
+        }
+    }
+    finally {
+        foreach ($temporaryPath in @($temporaryPostsPath, $temporarySummaryPath)) {
+            if (Test-Path -LiteralPath $temporaryPath) {
+                Remove-Item -LiteralPath $temporaryPath -Force
+            }
+        }
+    }
+}
+
 if (-not (Test-Path -LiteralPath $OutputRoot)) {
     New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
 }
@@ -289,6 +510,23 @@ $runAt = (Get-Date).ToUniversalTime().ToString('o')
 $postsPath = Join-Path $OutputRoot 'posts.jsonl'
 $archiveSummaryPath = Join-Path $OutputRoot 'archive-summary.json'
 $existingPosts = @()
+
+$isGitHubActions = [string]::Equals(
+    [string]$env:GITHUB_ACTIONS,
+    'true',
+    [StringComparison]::OrdinalIgnoreCase
+)
+
+if (-not $isGitHubActions -and -not $UpdateFromSource) {
+    try {
+        Sync-RepositoryArchive -DataUrl $RepositoryDataUrl -PostsPath $postsPath -SummaryPath $archiveSummaryPath
+        exit 0
+    }
+    catch {
+        Write-Error "Repository archive sync failed: $($_.Exception.Message)" -ErrorAction Continue
+        exit 1
+    }
+}
 
 try {
     $existingPosts = @(Read-JsonLines -Path $postsPath)

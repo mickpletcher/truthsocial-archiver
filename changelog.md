@@ -2,6 +2,42 @@
 
 All notable repo changes are logged here.
 
+## 2026-08-29
+
+### Added
+
+- Added local archive synchronization from the project's published GitHub JSONL and summary files.
+- Added `-RepositoryDataUrl` for isolated repository-sync testing and `-UpdateFromSource` for explicit local upstream tests.
+- Added downloaded JSONL validation for expected count, valid JSON, unique post IDs, and exact `@realDonaldTrump` URLs.
+- Added an Electron desktop app that requires no PowerShell or Python for normal use.
+- Added a Windows x64 Squirrel installer build and native macOS arm64 and x64 DMG builds.
+- Added desktop archive caching, validated GitHub updates, no-downgrade handling, and rollback on failed replacement.
+- Added desktop unit tests, Electron UI checks, packaged smoke tests, dependency audit, and SHA-256 artifact generation.
+
+### Changed
+
+- Changed normal local script runs to synchronize the published GitHub archive instead of downloading the upstream CNN dataset.
+- Kept CNN source ingestion as the automatic behavior inside GitHub Actions.
+- Prevented repository synchronization from replacing a local archive that contains more posts.
+- Updated operator documentation and the build specification for the separate producer and consumer paths.
+- Corrected the assessment to reflect the merged and successful daily workflow.
+- Reused the GitHub Pages search interface inside a secured Electron renderer.
+- Added desktop-only archive update and cache-folder controls.
+
+### Verified
+
+- Downloaded and validated 35,919 GitHub records into an empty isolated folder.
+- Replaced a stale 35,619-record clone with the validated 35,919-record GitHub archive.
+- Confirmed a second synchronization returned success without changing the JSONL SHA-256.
+- Confirmed an unavailable repository endpoint returned exit code 1 without changing either local archive file.
+- Confirmed explicit `-UpdateFromSource` bypassed repository synchronization.
+- Confirmed the GitHub Actions source-update path fetched 35,930 CNN records and appended 11 records beyond the morning GitHub snapshot.
+- Confirmed local synchronization refused to downgrade the 35,930-record source test to the 35,919-record GitHub snapshot.
+- Confirmed PowerShell syntax parsing passes.
+- Passed all five desktop archive updater tests and the Electron window test at standard and small sizes.
+- Built the unsigned `TruthSocialArchiveSetup.exe` on Windows x64 and passed the packaged archive smoke test.
+- Confirmed the packaged runtime dependency audit reports zero high or critical vulnerabilities.
+
 ## 2026-08-20
 
 ### Added

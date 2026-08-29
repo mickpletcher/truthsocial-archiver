@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self' archive:; img-src 'self' data: https:; media-src https:; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Truth Social Archive</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -14,10 +15,14 @@
         <div class="run-status" id="runStatus">Archive status unavailable.</div>
       </div>
       <div class="downloads">
-        <a href="data/archive-summary.json">Summary</a>
-        <a href="data/posts.jsonl">JSONL</a>
+        <a href="data/archive-summary.json" data-web-only>Summary</a>
+        <a href="data/posts.jsonl" data-web-only>JSONL</a>
+        <button id="refreshArchive" type="button" hidden>Check for updates</button>
+        <button id="openArchiveFolder" type="button" hidden>Open archive folder</button>
       </div>
     </header>
+
+    <div class="desktop-status" id="desktopStatus" hidden></div>
 
     <section class="controls" aria-label="Search filters">
       <label>

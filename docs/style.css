@@ -77,13 +77,44 @@ h1 {
   gap: 10px;
 }
 
-.downloads a {
+.downloads a,
+.downloads button {
   border: 1px solid var(--line);
   border-radius: 6px;
   background: var(--surface);
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
   padding: 8px 12px;
   text-decoration: none;
   font-weight: 700;
+}
+
+.downloads button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.desktop-status {
+  margin: -8px 0 16px;
+  border-left: 4px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.desktop-status.updated,
+.desktop-status.current {
+  border-left-color: #0f766e;
+  color: #0f766e;
+}
+
+.desktop-status.error {
+  border-left-color: #b42318;
+  color: #b42318;
 }
 
 .controls {
@@ -158,6 +189,7 @@ select {
 
 .post p {
   margin: 10px 0 12px;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
 
