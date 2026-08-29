@@ -23,6 +23,7 @@ All notable repo changes are logged here.
 - Corrected the assessment to reflect the merged and successful daily workflow.
 - Reused the GitHub Pages search interface inside a secured Electron renderer.
 - Added desktop-only archive update and cache-folder controls.
+- Updated the desktop workflow from `upload-artifact` v4 on deprecated Node 20 to SHA-pinned v7.0.1 on Node 24.
 
 ### Verified
 
@@ -37,6 +38,7 @@ All notable repo changes are logged here.
 - Passed all five desktop archive updater tests and the Electron window test at standard and small sizes.
 - Built the unsigned `TruthSocialArchiveSetup.exe` on Windows x64 and passed the packaged archive smoke test.
 - Confirmed the packaged runtime dependency audit reports zero high or critical vulnerabilities.
+- Confirmed the official `upload-artifact` v7.0.1 action uses Node 24.
 
 ## 2026-08-20
 
