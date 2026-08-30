@@ -19,6 +19,8 @@ Summary:
 - Restricted the audit exception list to three upstream build-only advisories with no patched npm releases.
 - Made npm linting and Electron Forge commands safe for Windows paths containing an ampersand.
 - Made release checksum generation safe for filenames that begin with a dash.
+- Updated the checkout, Node.js setup, and CodeQL actions to current releases.
+- Pinned every checkout action to a full commit SHA.
 
 Changed files:
 
