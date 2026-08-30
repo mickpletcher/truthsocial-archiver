@@ -6,6 +6,7 @@ All notable repo changes are logged here.
 
 ### Added
 
+- Added automatic GitHub Release publishing for version tags, including Windows and macOS installers and a combined SHA-256 checksum file.
 - Added local archive synchronization from the project's published GitHub JSONL and summary files.
 - Added `-RepositoryDataUrl` for isolated repository-sync testing and `-UpdateFromSource` for explicit local upstream tests.
 - Added downloaded JSONL validation for expected count, valid JSON, unique post IDs, and exact `@realDonaldTrump` URLs.
@@ -16,6 +17,7 @@ All notable repo changes are logged here.
 
 ### Changed
 
+- Changed desktop download instructions to direct users to the latest GitHub Release instead of workflow artifact ZIP files.
 - Changed normal local script runs to synchronize the published GitHub archive instead of downloading the upstream CNN dataset.
 - Kept CNN source ingestion as the automatic behavior inside GitHub Actions.
 - Prevented repository synchronization from replacing a local archive that contains more posts.

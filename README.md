@@ -23,18 +23,19 @@ No Truth Social account, password, bearer token, cookie, proxy, or self-hosted r
 
 The desktop app is the simplest way to use the archive. It includes the search page and an offline archive snapshot. The user does not need PowerShell, Python, Node.js, Git, or a Truth Social account.
 
-The desktop build workflow creates these downloadable artifacts:
+Each GitHub release provides these downloadable installers:
 
 - `TruthSocialArchiveSetup.exe` for 64-bit Windows.
 - An Apple silicon DMG for arm64 Macs.
 - An Intel DMG for x64 Macs.
+- `SHA256SUMS.txt` for installer verification.
 
 The current artifacts are unsigned test builds. Windows SmartScreen and macOS Gatekeeper can warn or block them. Code signing and Apple notarization are required before treating them as normal public releases.
 
 ### Windows
 
-1. Download the Windows x64 artifact from the repository's **Actions** tab.
-2. Extract the artifact ZIP.
+1. Open the repository's [latest release](https://github.com/mickpletcher/truthsocial-archiver/releases/latest).
+2. Under **Assets**, download `TruthSocialArchiveSetup.exe`.
 3. Double-click `TruthSocialArchiveSetup.exe`.
 4. Open **Truth Social Archive** from the Start menu.
 
@@ -42,8 +43,8 @@ The installer is per-user and does not require a separate Python, PowerShell, or
 
 ### macOS
 
-1. Download the arm64 artifact for an Apple silicon Mac or the x64 artifact for an Intel Mac.
-2. Extract the artifact ZIP and open the DMG.
+1. Open the repository's [latest release](https://github.com/mickpletcher/truthsocial-archiver/releases/latest).
+2. Under **Assets**, download the arm64 DMG for an Apple silicon Mac or the x64 DMG for an Intel Mac.
 3. Drag **Truth Social Archive** to **Applications**.
 4. Open the application.
 
@@ -233,6 +234,19 @@ The separate desktop build workflow runs when desktop code changes. It tests the
 ## Build the Desktop App from Source
 
 This section is for maintainers. Average users should use a built installer.
+
+### Publish a Desktop Release
+
+1. Update `version` in `package.json` and `package-lock.json`.
+2. Commit and push the version change to `main`.
+3. Create and push a matching tag such as `v1.0.0`.
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The desktop workflow builds and tests all three installers, then publishes them on the repository's **Releases** page. The tag must exactly match the package version prefixed with `v`.
 
 Install Node.js 24, then run:
 

@@ -17,6 +17,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
     paths:
       - '.github/workflows/desktop-build.yml'
       - 'desktop/**'
@@ -167,3 +169,51 @@ jobs:
           name: truth-social-archive-macos-${{ matrix.arch }}-unsigned
           path: out/make/**
           if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+      - windows
+      - macos
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Validate release version
+        run: |
+          expected_tag="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$expected_tag" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version $expected_tag." >&2
+            exit 1
+          fi
+
+      - name: Download installer artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: truth-social-archive-*
+          path: release-input
+
+      - name: Prepare release assets
+        run: |
+          mkdir release-assets
+          find release-input -type f \( -name '*.exe' -o -name '*.dmg' \) -exec cp '{}' release-assets/ \;
+          test "$(find release-assets -type f | wc -l)" -eq 3
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME"
+          release-assets/*
+          --verify-tag
+          --generate-notes
+          --title "Truth Social Archive $GITHUB_REF_NAME"
