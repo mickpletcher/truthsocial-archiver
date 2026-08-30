@@ -203,7 +203,9 @@ jobs:
       - name: Prepare release assets
         run: |
           mkdir release-assets
-          find release-input -type f \( -name '*.exe' -o -name '*.dmg' \) -exec cp '{}' release-assets/ \;
+          cp release-input/truth-social-archive-windows-x64-unsigned/squirrel.windows/x64/TruthSocialArchiveSetup.exe release-assets/
+          cp release-input/truth-social-archive-macos-arm64-unsigned/dmg/arm64/*.dmg release-assets/TruthSocialArchive-macos-arm64.dmg
+          cp release-input/truth-social-archive-macos-x64-unsigned/dmg/x64/*.dmg release-assets/TruthSocialArchive-macos-x64.dmg
           test "$(find release-assets -type f | wc -l)" -eq 3
           cd release-assets
           sha256sum * > SHA256SUMS.txt

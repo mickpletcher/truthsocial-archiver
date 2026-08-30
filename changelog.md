@@ -17,6 +17,7 @@ All notable repo changes are logged here.
 
 ### Changed
 
+- Assigned architecture-specific macOS release filenames so arm64 and x64 disk images cannot overwrite each other during publishing.
 - Changed desktop download instructions to direct users to the latest GitHub Release instead of workflow artifact ZIP files.
 - Changed normal local script runs to synchronize the published GitHub archive instead of downloading the upstream CNN dataset.
 - Kept CNN source ingestion as the automatic behavior inside GitHub Actions.
