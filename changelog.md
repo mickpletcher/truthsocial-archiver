@@ -21,6 +21,8 @@ All notable repo changes are logged here.
 - Added a strict audit allowlist for three high-severity Electron build-chain advisories that have no patched npm release. Any new high or critical advisory fails CI.
 - Made npm linting and Electron Forge commands work from Windows paths containing an ampersand.
 - Made the release checksum glob safe for filenames that begin with a dash.
+- Updated `actions/checkout` to v7.0.1, `actions/setup-node` to v7.0.0, and CodeQL Action to its current v4 commit.
+- Pinned the scraper checkout action to a full commit SHA.
 
 ### Verified
 
