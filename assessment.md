@@ -8,7 +8,7 @@ GitHub Actions uses CNN's public JSON archive to maintain one append-only JSONL 
 
 The previous direct Truth Social API workflow was nonfunctional. All 52 scheduled runs from June 30 through August 20, 2026 returned `403 Forbidden`, archived zero posts, and still appeared green. A manual run with a bearer token also returned `403 Forbidden` from `windows-latest`.
 
-The local working tree now adds two consumer paths. The PowerShell script synchronizes a newer JSONL snapshot from this project's GitHub repository. A desktop app provides the same validated update behavior through a Windows installer and macOS DMGs without requiring PowerShell or Python. GitHub Actions and explicit `-UpdateFromSource` runs retain upstream CNN ingestion. These local changes are implemented and validated but are not yet published.
+The project has two consumer paths. The PowerShell script synchronizes a newer JSONL snapshot from this project's GitHub repository. The published desktop app provides the same validated update behavior through a Windows installer and macOS DMGs without requiring PowerShell or Python. GitHub Actions and explicit `-UpdateFromSource` runs retain upstream CNN ingestion.
 
 ## Implemented
 
@@ -35,6 +35,9 @@ The local working tree now adds two consumer paths. The PowerShell script synchr
 - Desktop archive cache replacement that validates all downloaded records and preserves the prior cache on failure.
 - Automated Node tests, Electron window tests, packaged smoke tests, runtime dependency audit, and artifact checksums.
 - SHA-pinned `upload-artifact` v7.0.1 using the supported Node 24 action runtime.
+- Pull request and `main` quality checks using ESLint, Markdownlint, PSScriptAnalyzer, Pester, and Actionlint.
+- CodeQL scanning and weekly Dependabot checks for npm and GitHub Actions dependencies.
+- Full dependency auditing that fails for any new high or critical advisory.
 
 ## Validation
 
@@ -80,23 +83,31 @@ Completed on August 29, 2026:
 - Confirmed the packaged runtime dependency audit reports zero known vulnerabilities at high or critical severity. Development-only Forge tooling still has upstream advisories.
 - Replaced the deprecated Node 20 artifact uploader with the official Node 24 `upload-artifact` v7.0.1 release.
 
+Completed locally on August 30, 2026:
+
+- Passed ESLint and Markdownlint with zero issues.
+- Passed five JavaScript unit tests and five PowerShell tests.
+- Passed PSScriptAnalyzer at warning and error severity.
+- Passed Actionlint against all GitHub Actions workflows.
+- Confirmed patched `tar` 7.5.22 and `tmp` 0.2.7 transitive dependencies are installed.
+- Confirmed the full dependency audit reports no critical or unapproved high-severity advisories.
+- Synchronized and validated 35,939 records in an isolated output folder.
+- Built the Windows x64 installer and passed the packaged executable smoke test.
+
 ## Known Issues
 
-- The local synchronization change is not yet committed or published.
 - The GitHub archive updates daily, so it can temporarily trail CNN between scheduled runs.
 - The project depends on CNN's public archive remaining available and current.
 - Local synchronization depends on GitHub and `raw.githubusercontent.com` being reachable.
 - Existing engagement counts are not refreshed because archived records are append-only.
 - Windows and macOS artifacts are unsigned. Authenticode inspection confirmed the local Windows installer is `NotSigned`. Normal public distribution still requires a Windows signing certificate plus an Apple Developer ID certificate and notarization credentials.
-- macOS DMGs cannot be built or executed on this Windows workstation. Their native GitHub-hosted builds remain unverified until this change is pushed and the workflow runs.
+- Three high-severity advisories remain in development-only Electron packaging dependencies. They have no patched npm release, accept only repository-controlled build inputs, and are explicitly tracked by the audit allowlist.
 
 ## Next Recommended Work
 
-1. Review and commit the local synchronization and desktop changes on a feature branch.
-2. Push the branch and validate the Windows, Apple silicon, and Intel desktop jobs.
-3. Configure Windows code signing, Apple Developer ID signing, and Apple notarization.
-4. Publish signed installers through GitHub Releases.
-5. Confirm a fresh ZIP download can synchronize after the change is published.
+1. Configure Windows code signing, Apple Developer ID signing, and Apple notarization.
+2. Publish signed installers through GitHub Releases.
+3. Remove each dependency audit exception as soon as its upstream package publishes a patched release.
 
 ## Maintenance Rules
 

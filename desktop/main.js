@@ -138,13 +138,11 @@ function configureSecurity() {
   app.on('web-contents-created', (_event, contents) => {
     contents.on('will-navigate', event => event.preventDefault());
     contents.setWindowOpenHandler(({ url }) => {
-      try {
+      if (URL.canParse(url)) {
         const parsed = new URL(url);
         if (parsed.protocol === 'https:') {
           setImmediate(() => shell.openExternal(parsed.toString()));
         }
-      }
-      catch {
       }
 
       return { action: 'deny' };

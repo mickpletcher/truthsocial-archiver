@@ -22,7 +22,7 @@ if (-not $OutputRoot) {
 $ProfilesPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($ProfilesPath)
 $OutputRoot = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputRoot)
 
-$Profile = [pscustomobject]@{
+$ArchiveProfile = [pscustomobject]@{
     AccountId   = '107780257626128497'
     Username    = 'realDonaldTrump'
     DisplayName = 'Donald J. Trump'
@@ -189,9 +189,9 @@ function ConvertTo-ArchivePost {
     $rawContent = [string]$Post.content
 
     [pscustomobject]@{
-        profile_account_id   = $Profile.AccountId
-        profile_username     = $Profile.Username
-        profile_display_name = $Profile.DisplayName
+        profile_account_id   = $ArchiveProfile.AccountId
+        profile_username     = $ArchiveProfile.Username
+        profile_display_name = $ArchiveProfile.DisplayName
         id                   = [string]$Post.id
         created_at           = ConvertTo-UtcTimestamp -Value $Post.created_at
         url                  = [string]$Post.url
@@ -208,7 +208,7 @@ function ConvertTo-ArchivePost {
     }
 }
 
-function Read-JsonLines {
+function Read-JsonLine {
     param(
         [Parameter(Mandatory)]
         [string]$Path
@@ -240,7 +240,7 @@ function Save-JsonObject {
     ConvertTo-Json -InputObject $Item -Depth 20 | Set-Content -LiteralPath $Path -Encoding utf8
 }
 
-function Save-JsonLines {
+function Save-JsonLine {
     param(
         [AllowEmptyCollection()]
         [array]$Items,
@@ -264,7 +264,7 @@ function Save-JsonLines {
         Set-Content -LiteralPath $Path -Encoding utf8
 }
 
-function Add-JsonLines {
+function Add-JsonLine {
     param(
         [AllowEmptyCollection()]
         [array]$Items,
@@ -342,7 +342,7 @@ function Get-RepositoryArchiveSummary {
     }
 
     $profiles = @($summary.profiles)
-    if ($profiles.Count -ne 1 -or [string]$profiles[0].username -ne $Profile.Username) {
+    if ($profiles.Count -ne 1 -or [string]$profiles[0].username -ne $ArchiveProfile.Username) {
         throw 'Repository archive summary does not describe @realDonaldTrump.'
     }
 
@@ -390,7 +390,7 @@ function Test-RepositoryArchiveFile {
             throw "Downloaded repository archive contains a post without an ID on line $lineNumber."
         }
 
-        if ([string]$post.url -ne "$($Profile.Url)/$id") {
+        if ([string]$post.url -ne "$($ArchiveProfile.Url)/$id") {
             throw "Downloaded repository archive contains an unexpected post URL on line $lineNumber."
         }
 
@@ -446,7 +446,7 @@ function Sync-RepositoryArchive {
     }
 
     if ($remoteSummary.TotalPosts -lt $localPostCount) {
-        Write-Host "Local archive has $localPostCount posts, which is newer than the repository archive with $($remoteSummary.TotalPosts) posts. No files were replaced."
+        Write-Information "Local archive has $localPostCount posts, which is newer than the repository archive with $($remoteSummary.TotalPosts) posts. No files were replaced." -InformationAction Continue
         return
     }
 
@@ -454,7 +454,7 @@ function Sync-RepositoryArchive {
     $updateSummary = $downloadPosts -or -not $localRunAt -or $remoteSummary.RunAt -gt $localRunAt
 
     if (-not $downloadPosts -and -not $updateSummary) {
-        Write-Host "Local archive is current with $localPostCount posts."
+        Write-Information "Local archive is current with $localPostCount posts." -InformationAction Continue
         return
     }
 
@@ -465,7 +465,7 @@ function Sync-RepositoryArchive {
 
     try {
         if ($downloadPosts) {
-            Write-Host "Downloading newer repository archive with $($remoteSummary.TotalPosts) posts."
+            Write-Information "Downloading newer repository archive with $($remoteSummary.TotalPosts) posts." -InformationAction Continue
             Invoke-WebRequest -Uri "$baseUrl/posts.jsonl" -Headers @{
                 Accept          = 'application/x-ndjson, application/json, text/plain'
                 'Cache-Control' = 'no-cache'
@@ -486,10 +486,10 @@ function Sync-RepositoryArchive {
         [IO.File]::Move($temporarySummaryPath, $SummaryPath, $true)
 
         if ($downloadPosts) {
-            Write-Host "Local archive updated from $localPostCount to $($remoteSummary.TotalPosts) posts."
+            Write-Information "Local archive updated from $localPostCount to $($remoteSummary.TotalPosts) posts." -InformationAction Continue
         }
         else {
-            Write-Host "Local archive data is current with $localPostCount posts. Updated the run summary."
+            Write-Information "Local archive data is current with $localPostCount posts. Updated the run summary." -InformationAction Continue
         }
     }
     finally {
@@ -501,115 +501,142 @@ function Sync-RepositoryArchive {
     }
 }
 
-if (-not (Test-Path -LiteralPath $OutputRoot)) {
-    New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
-}
+function Invoke-ArchiveUpdate {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$ProfilesPath,
 
-$configuredProfile = Get-ConfiguredProfile -Path $ProfilesPath
-$runAt = (Get-Date).ToUniversalTime().ToString('o')
-$postsPath = Join-Path $OutputRoot 'posts.jsonl'
-$archiveSummaryPath = Join-Path $OutputRoot 'archive-summary.json'
-$existingPosts = @()
+        [Parameter(Mandatory)]
+        [string]$OutputRoot,
 
-$isGitHubActions = [string]::Equals(
-    [string]$env:GITHUB_ACTIONS,
-    'true',
-    [StringComparison]::OrdinalIgnoreCase
-)
+        [Parameter(Mandatory)]
+        [string]$SourceUrl,
 
-if (-not $isGitHubActions -and -not $UpdateFromSource) {
-    try {
-        Sync-RepositoryArchive -DataUrl $RepositoryDataUrl -PostsPath $postsPath -SummaryPath $archiveSummaryPath
-        exit 0
-    }
-    catch {
-        Write-Error "Repository archive sync failed: $($_.Exception.Message)" -ErrorAction Continue
-        exit 1
-    }
-}
+        [string]$RepositoryDataUrl,
 
-try {
-    $existingPosts = @(Read-JsonLines -Path $postsPath)
-
-    Write-Host "Downloading public archive from $SourceUrl"
-    $publicArchive = Get-PublicArchive -Url $SourceUrl
-    $sourcePosts = @(
-        foreach ($post in $publicArchive.Items) {
-            ConvertTo-ArchivePost -Post $post -ScrapedAt $runAt
-        }
+        [switch]$UpdateFromSource
     )
 
-    $existingIds = @{}
-    foreach ($post in $existingPosts) {
-        if ($post.id) {
-            $existingIds[[string]$post.id] = $true
+    if (-not (Test-Path -LiteralPath $OutputRoot)) {
+        New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
+    }
+
+    $configuredProfile = Get-ConfiguredProfile -Path $ProfilesPath
+    $runAt = (Get-Date).ToUniversalTime().ToString('o')
+    $postsPath = Join-Path $OutputRoot 'posts.jsonl'
+    $archiveSummaryPath = Join-Path $OutputRoot 'archive-summary.json'
+    $existingPosts = @()
+
+    $isGitHubActions = [string]::Equals(
+        [string]$env:GITHUB_ACTIONS,
+        'true',
+        [StringComparison]::OrdinalIgnoreCase
+    )
+
+    if (-not $isGitHubActions -and -not $UpdateFromSource) {
+        try {
+            Sync-RepositoryArchive -DataUrl $RepositoryDataUrl -PostsPath $postsPath -SummaryPath $archiveSummaryPath
+            return
+        }
+        catch {
+            throw "Repository archive sync failed: $($_.Exception.Message)"
         }
     }
 
-    $newPosts = @($sourcePosts | Where-Object { -not $existingIds.ContainsKey([string]$_.id) })
-    if ($existingPosts.Count -eq 0) {
-        Save-JsonLines -Items $newPosts -Path $postsPath
-    }
-    else {
-        Add-JsonLines -Items $newPosts -Path $postsPath
-    }
+    try {
+        $existingPosts = @(Read-JsonLine -Path $postsPath)
 
-    $totalPosts = $existingPosts.Count + $newPosts.Count
-
-    $archiveSummary = [pscustomobject]@{
-        run_at               = $runAt
-        status               = 'ok'
-        source_url           = $SourceUrl
-        source_last_modified = $publicArchive.LastModified
-        profile_count        = 1
-        total_posts          = $totalPosts
-        new_posts            = $newPosts.Count
-        profiles             = @(
-            [pscustomobject]@{
-                input          = $configuredProfile
-                account_id     = $Profile.AccountId
-                username       = $Profile.Username
-                display_name   = $Profile.DisplayName
-                status         = 'ok'
-                total_posts    = $totalPosts
-                existing_posts = $existingPosts.Count
-                fetched_posts  = $sourcePosts.Count
-                new_posts      = $newPosts.Count
-                message        = $null
+        Write-Information "Downloading public archive from $SourceUrl" -InformationAction Continue
+        $publicArchive = Get-PublicArchive -Url $SourceUrl
+        $sourcePosts = @(
+            foreach ($post in $publicArchive.Items) {
+                ConvertTo-ArchivePost -Post $post -ScrapedAt $runAt
             }
         )
-    }
 
-    Save-JsonObject -Item $archiveSummary -Path $archiveSummaryPath
-    Write-Host "Archived $totalPosts total posts. Added $($newPosts.Count) new posts."
+        $existingIds = @{}
+        foreach ($post in $existingPosts) {
+            if ($post.id) {
+                $existingIds[[string]$post.id] = $true
+            }
+        }
+
+        $newPosts = @($sourcePosts | Where-Object { -not $existingIds.ContainsKey([string]$_.id) })
+        if ($existingPosts.Count -eq 0) {
+            Save-JsonLine -Items $newPosts -Path $postsPath
+        }
+        else {
+            Add-JsonLine -Items $newPosts -Path $postsPath
+        }
+
+        $totalPosts = $existingPosts.Count + $newPosts.Count
+
+        $archiveSummary = [pscustomobject]@{
+            run_at               = $runAt
+            status               = 'ok'
+            source_url           = $SourceUrl
+            source_last_modified = $publicArchive.LastModified
+            profile_count        = 1
+            total_posts          = $totalPosts
+            new_posts            = $newPosts.Count
+            profiles             = @(
+                [pscustomobject]@{
+                    input          = $configuredProfile
+                    account_id     = $ArchiveProfile.AccountId
+                    username       = $ArchiveProfile.Username
+                    display_name   = $ArchiveProfile.DisplayName
+                    status         = 'ok'
+                    total_posts    = $totalPosts
+                    existing_posts = $existingPosts.Count
+                    fetched_posts  = $sourcePosts.Count
+                    new_posts      = $newPosts.Count
+                    message        = $null
+                }
+            )
+        }
+
+        Save-JsonObject -Item $archiveSummary -Path $archiveSummaryPath
+        Write-Information "Archived $totalPosts total posts. Added $($newPosts.Count) new posts." -InformationAction Continue
+    }
+    catch {
+        $message = $_.Exception.Message
+        $archiveSummary = [pscustomobject]@{
+            run_at               = $runAt
+            status               = 'error'
+            source_url           = $SourceUrl
+            source_last_modified = $null
+            profile_count        = 1
+            total_posts          = $existingPosts.Count
+            new_posts            = 0
+            profiles             = @(
+                [pscustomobject]@{
+                    input          = $configuredProfile
+                    account_id     = $ArchiveProfile.AccountId
+                    username       = $ArchiveProfile.Username
+                    display_name   = $ArchiveProfile.DisplayName
+                    status         = 'error'
+                    total_posts    = $existingPosts.Count
+                    existing_posts = $existingPosts.Count
+                    fetched_posts  = 0
+                    new_posts      = 0
+                    message        = $message
+                }
+            )
+        }
+
+        Save-JsonObject -Item $archiveSummary -Path $archiveSummaryPath
+        throw "Public archive failed: $message"
+    }
 }
-catch {
-    $message = $_.Exception.Message
-    $archiveSummary = [pscustomobject]@{
-        run_at               = $runAt
-        status               = 'error'
-        source_url           = $SourceUrl
-        source_last_modified = $null
-        profile_count        = 1
-        total_posts          = $existingPosts.Count
-        new_posts            = 0
-        profiles             = @(
-            [pscustomobject]@{
-                input          = $configuredProfile
-                account_id     = $Profile.AccountId
-                username       = $Profile.Username
-                display_name   = $Profile.DisplayName
-                status         = 'error'
-                total_posts    = $existingPosts.Count
-                existing_posts = $existingPosts.Count
-                fetched_posts  = 0
-                new_posts      = 0
-                message        = $message
-            }
-        )
-    }
 
-    Save-JsonObject -Item $archiveSummary -Path $archiveSummaryPath
-    Write-Error "Public archive failed: $message" -ErrorAction Continue
-    exit 1
+if ($MyInvocation.InvocationName -ne '.') {
+    try {
+        Invoke-ArchiveUpdate -ProfilesPath $ProfilesPath -OutputRoot $OutputRoot -SourceUrl $SourceUrl `
+            -RepositoryDataUrl $RepositoryDataUrl -UpdateFromSource:$UpdateFromSource
+    }
+    catch {
+        Write-Error $_.Exception.Message -ErrorAction Continue
+        exit 1
+    }
 }
