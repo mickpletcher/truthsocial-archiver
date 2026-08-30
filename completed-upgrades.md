@@ -18,6 +18,7 @@ Summary:
 - Updated all-dependency auditing to use patched `tar` and `tmp` transitive dependencies.
 - Restricted the audit exception list to three upstream build-only advisories with no patched npm releases.
 - Made npm linting and Electron Forge commands safe for Windows paths containing an ampersand.
+- Made release checksum generation safe for filenames that begin with a dash.
 
 Changed files:
 

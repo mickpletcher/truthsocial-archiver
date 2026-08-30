@@ -20,6 +20,7 @@ All notable repo changes are logged here.
 - Overrode vulnerable transitive `tar` and `tmp` versions with their patched releases.
 - Added a strict audit allowlist for three high-severity Electron build-chain advisories that have no patched npm release. Any new high or critical advisory fails CI.
 - Made npm linting and Electron Forge commands work from Windows paths containing an ampersand.
+- Made the release checksum glob safe for filenames that begin with a dash.
 
 ### Verified
 
