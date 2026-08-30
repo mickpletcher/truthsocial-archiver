@@ -60,8 +60,8 @@ jobs:
       - name: Run checks
         run: npm run check
 
-      - name: Audit packaged dependencies
-        run: npm audit --omit=dev --audit-level=high
+      - name: Audit all dependencies
+        run: npm run audit:dependencies
 
       - name: Test Electron window
         run: npm run test:electron
@@ -141,8 +141,8 @@ jobs:
       - name: Run checks
         run: npm run check
 
-      - name: Audit packaged dependencies
-        run: npm audit --omit=dev --audit-level=high
+      - name: Audit all dependencies
+        run: npm run audit:dependencies
 
       - name: Test Electron window
         run: npm run test:electron

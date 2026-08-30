@@ -1,0 +1,79 @@
+name: Quality
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install Node.js dependencies
+        run: npm ci
+
+      - name: Lint JavaScript and Markdown
+        run: npm run lint
+
+      - name: Run JavaScript unit tests
+        run: npm test
+
+      - name: Audit all dependencies
+        run: npm run audit:dependencies
+
+      - name: Install PowerShell quality modules
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name Pester -RequiredVersion 5.7.1 -Scope CurrentUser -Force
+          Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.25.0 -Scope CurrentUser -Force
+
+      - name: Analyze PowerShell
+        shell: pwsh
+        run: |
+          $results = @(
+            Invoke-ScriptAnalyzer -Path scripts -Recurse -Severity Warning, Error
+            Invoke-ScriptAnalyzer -Path tests/powershell -Recurse -Severity Warning, Error
+          )
+          $results | Format-Table -AutoSize
+          if ($results) {
+            exit 1
+          }
+
+      - name: Run PowerShell tests
+        run: npm run test:powershell
+        shell: pwsh
+
+      - name: Install actionlint
+        run: |
+          curl --fail --location --silent --show-error \
+            --output actionlint.tar.gz \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  actionlint.tar.gz" | sha256sum --check
+          tar --extract --gzip --file actionlint.tar.gz actionlint
+
+      - name: Lint GitHub Actions workflows
+        run: ./actionlint -color

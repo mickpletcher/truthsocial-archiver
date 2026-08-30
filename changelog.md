@@ -2,6 +2,35 @@
 
 All notable repo changes are logged here.
 
+## 2026-08-30
+
+### Added
+
+- Added an automated quality workflow for JavaScript, Markdown, PowerShell, GitHub Actions, unit tests, and dependency auditing.
+- Added ESLint, Markdownlint, PSScriptAnalyzer, Actionlint, and five Pester tests for source validation, append-only idempotency, and error summaries.
+- Added weekly npm and GitHub Actions Dependabot updates.
+- Added CodeQL scanning for pull requests, pushes to `main`, and weekly scheduled runs.
+- Added README badges for quality, desktop builds, archive updates, CodeQL, releases, and the license.
+
+### Changed
+
+- Refactored the scraper entry point so its production behavior can be tested without running network or repository writes during test discovery.
+- Renamed the PowerShell profile variable and internal JSONL helpers to satisfy PSScriptAnalyzer without suppressing warnings.
+- Expanded dependency auditing to include build and development dependencies.
+- Overrode vulnerable transitive `tar` and `tmp` versions with their patched releases.
+- Added a strict audit allowlist for three high-severity Electron build-chain advisories that have no patched npm release. Any new high or critical advisory fails CI.
+- Made npm linting and Electron Forge commands work from Windows paths containing an ampersand.
+
+### Verified
+
+- Passed ESLint and Markdownlint with zero issues.
+- Passed all five JavaScript unit tests and all five PowerShell tests.
+- Passed PSScriptAnalyzer at warning and error severity.
+- Passed Actionlint against every workflow.
+- Confirmed the dependency audit has no critical advisories and no unapproved high-severity advisories.
+- Synchronized and validated 35,939 records in an isolated output folder.
+- Built the Windows x64 installer and passed the packaged executable smoke test.
+
 ## 2026-08-29
 
 ### Added

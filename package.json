@@ -7,12 +7,17 @@
   "author": "Mick Pletcher",
   "license": "MIT",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
+    "start": "node node_modules/@electron-forge/cli/dist/electron-forge.js start",
+    "package": "node node_modules/@electron-forge/cli/dist/electron-forge.js package",
+    "make": "node node_modules/@electron-forge/cli/dist/electron-forge.js make",
+    "lint": "npm run lint:js && npm run lint:markdown",
+    "lint:js": "node node_modules/eslint/bin/eslint.js .",
+    "lint:markdown": "node node_modules/markdownlint-cli2/markdownlint-cli2-bin.mjs README.md assessment.md changelog.md completed-upgrades.md",
     "test": "node --test tests/*.test.js",
+    "test:powershell": "pwsh -NoProfile -File scripts/Invoke-PesterTests.ps1",
     "test:electron": "node scripts/test-electron.mjs",
-    "check": "node --check desktop/archive-store.js && node --check desktop/main.js && node --check desktop/preload.js && node --check docs/app.js && node --check forge.config.js && node --test tests/*.test.js"
+    "audit:dependencies": "node scripts/audit-dependencies.mjs",
+    "check": "npm run lint && npm test"
   },
   "dependencies": {
     "electron-squirrel-startup": "1.0.1"
@@ -21,7 +26,15 @@
     "@electron-forge/cli": "7.11.2",
     "@electron-forge/maker-dmg": "7.11.2",
     "@electron-forge/maker-squirrel": "7.11.2",
+    "@eslint/js": "10.0.1",
     "electron": "44.0.0",
+    "eslint": "10.9.1",
+    "globals": "17.11.0",
+    "markdownlint-cli2": "0.23.2",
     "playwright": "1.62.1"
+  },
+  "overrides": {
+    "tar": "7.5.22",
+    "tmp": "0.2.7"
   }
 }

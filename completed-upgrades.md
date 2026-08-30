@@ -2,6 +2,54 @@
 
 Completed repo upgrades are recorded here after they ship.
 
+## 2026-08-30
+
+### Automated Quality and Security Checks
+
+Status: Implemented and validated locally
+
+Summary:
+
+- Added a cross-platform quality workflow for every pull request and push to `main`.
+- Added JavaScript, Markdown, PowerShell, and GitHub Actions linting.
+- Added five PowerShell tests for malformed source data, duplicate IDs, incorrect profile URLs, append-only idempotency, and error summaries.
+- Added CodeQL and weekly Dependabot checks for npm and GitHub Actions dependencies.
+- Added status, release, and license badges to the README.
+- Updated all-dependency auditing to use patched `tar` and `tmp` transitive dependencies.
+- Restricted the audit exception list to three upstream build-only advisories with no patched npm releases.
+- Made npm linting and Electron Forge commands safe for Windows paths containing an ampersand.
+
+Changed files:
+
+- `.github/dependabot.yml`
+- `.github/workflows/codeql.yml`
+- `.github/workflows/desktop-build.yml`
+- `.github/workflows/quality.yml`
+- `.markdownlint-cli2.jsonc`
+- `desktop/main.js`
+- `eslint.config.cjs`
+- `package.json`
+- `package-lock.json`
+- `scripts/Invoke-PesterTests.ps1`
+- `scripts/Scrape-TruthSocialProfiles.ps1`
+- `scripts/audit-dependencies.mjs`
+- `tests/powershell/Scrape-TruthSocialProfiles.Tests.ps1`
+- `README.md`
+- `assessment.md`
+- `changelog.md`
+- `completed-upgrades.md`
+
+Validation:
+
+- Passed ESLint and Markdownlint with zero issues.
+- Passed five JavaScript unit tests.
+- Passed five PowerShell tests.
+- Passed PSScriptAnalyzer with warning and error severities enabled.
+- Passed Actionlint against all GitHub Actions workflows.
+- Confirmed the full dependency audit reports no critical or unapproved high-severity advisories.
+- Synchronized and validated 35,939 records in an isolated output folder.
+- Built the Windows x64 installer and passed its packaged executable smoke test.
+
 ## 2026-08-29
 
 ### Windows and macOS Desktop Packaging

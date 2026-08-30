@@ -2,9 +2,16 @@
 
 A searchable, append-only archive of Donald J. Trump's public Truth Social posts.
 
+[![Quality](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/quality.yml/badge.svg?branch=main)](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/quality.yml)
+[![Desktop Builds](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/desktop-build.yml/badge.svg?branch=main)](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/desktop-build.yml)
+[![Archive Update](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/scrape.yml/badge.svg?branch=main)](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/scrape.yml)
+[![CodeQL](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/mickpletcher/truthsocial-archiver/actions/workflows/codeql.yml)
+[![Latest Release](https://img.shields.io/github/v/release/mickpletcher/truthsocial-archiver)](https://github.com/mickpletcher/truthsocial-archiver/releases/latest)
+[![License](https://img.shields.io/github/license/mickpletcher/truthsocial-archiver)](https://github.com/mickpletcher/truthsocial-archiver/blob/main/LICENSE)
+
 The project tracks only this public profile:
 
-https://truthsocial.com/@realDonaldTrump
+<https://truthsocial.com/@realDonaldTrump>
 
 No Truth Social account, password, bearer token, cookie, proxy, or self-hosted runner is needed.
 
@@ -97,7 +104,7 @@ Set-Location .\truthsocial-archiver
 
 3. Open this address in your browser:
 
-   http://127.0.0.1:8000/
+   <http://127.0.0.1:8000/>
 
 4. Leave the terminal window open while using the site.
 5. Press `Ctrl+C` in the terminal when you are finished.
@@ -191,7 +198,7 @@ Replace `iran` with the word or regular expression you want to find.
 
 The scraper downloads this public JSON dataset:
 
-https://ix.cnn.io/data/truth-social/truth_archive.json
+<https://ix.cnn.io/data/truth-social/truth_archive.json>
 
 The source includes public post IDs, timestamps, text, original Truth Social URLs, engagement counts, and media URLs.
 
@@ -229,7 +236,9 @@ The workflow sets the GitHub Actions environment automatically, so the script ru
 
 No GitHub repository secret is used.
 
-The separate desktop build workflow runs when desktop code changes. It tests the archive updater and desktop window, audits packaged dependencies, creates SHA-256 checksums, and uploads unsigned Windows x64, macOS arm64, and macOS x64 artifacts.
+The quality workflow runs on every pull request and push to `main`. It checks JavaScript, Markdown, PowerShell, GitHub Actions workflows, unit tests, and all dependency advisories. Dependabot checks npm packages and GitHub Actions every week. CodeQL scans the JavaScript code on pull requests, pushes to `main`, and weekly.
+
+The separate desktop build workflow runs when desktop code changes. It tests the archive updater and desktop window, audits all dependency advisories, creates SHA-256 checksums, and uploads unsigned Windows x64, macOS arm64, and macOS x64 artifacts.
 
 ## Build the Desktop App from Source
 
@@ -253,9 +262,13 @@ Install Node.js 24, then run:
 ```powershell
 npm ci
 npm run check
+npm run audit:dependencies
+npm run test:powershell
 npm run test:electron
 npm run make -- --arch=x64
 ```
+
+The PowerShell test command requires Pester 5.7.1. PowerShell linting requires PSScriptAnalyzer 1.25.0. The quality workflow installs both modules automatically.
 
 Run the Windows build on Windows. Run the DMG build on macOS with `--arch=arm64` or `--arch=x64`. The GitHub Actions workflow builds both Mac architectures on native runners.
 
@@ -272,7 +285,7 @@ To publish the search page from this repository:
 
 The expected site address is:
 
-https://mickpletcher.github.io/truthsocial-archiver/
+<https://mickpletcher.github.io/truthsocial-archiver/>
 
 Example published searches:
 
