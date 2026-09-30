@@ -1,11 +1,11 @@
 {
-  "run_at": "2026-09-29T06:25:21.6659822Z",
+  "run_at": "2026-09-30T06:25:31.4262463Z",
   "status": "ok",
   "source_url": "https://ix.cnn.io/data/truth-social/truth_archive.json",
-  "source_last_modified": "Tue, 29 Sep 2026 04:56:27 GMT",
+  "source_last_modified": "Wed, 30 Sep 2026 05:05:46 GMT",
   "profile_count": 1,
-  "total_posts": 36564,
-  "new_posts": 13,
+  "total_posts": 36570,
+  "new_posts": 6,
   "profiles": [
     {
       "input": "https://truthsocial.com/@realDonaldTrump",
@@ -13,10 +13,10 @@
       "username": "realDonaldTrump",
       "display_name": "Donald J. Trump",
       "status": "ok",
-      "total_posts": 36564,
-      "existing_posts": 36551,
-      "fetched_posts": 36564,
-      "new_posts": 13,
+      "total_posts": 36570,
+      "existing_posts": 36564,
+      "fetched_posts": 36570,
+      "new_posts": 6,
       "message": null
     }
   ]
