@@ -1,10 +1,10 @@
 {
-  "run_at": "2026-11-03T06:14:56.4647423Z",
+  "run_at": "2026-11-04T06:14:56.0782377Z",
   "status": "ok",
   "source_url": "https://ix.cnn.io/data/truth-social/truth_archive.json",
-  "source_last_modified": "Tue, 03 Nov 2026 05:04:03 GMT",
+  "source_last_modified": "Wed, 04 Nov 2026 04:58:52 GMT",
   "profile_count": 1,
-  "total_posts": 37808,
+  "total_posts": 37948,
   "new_posts": 140,
   "profiles": [
     {
@@ -13,9 +13,9 @@
       "username": "realDonaldTrump",
       "display_name": "Donald J. Trump",
       "status": "ok",
-      "total_posts": 37808,
-      "existing_posts": 37668,
-      "fetched_posts": 37808,
+      "total_posts": 37948,
+      "existing_posts": 37808,
+      "fetched_posts": 37948,
       "new_posts": 140,
       "message": null
     }
