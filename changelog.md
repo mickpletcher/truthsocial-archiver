@@ -208,4 +208,3 @@ All notable repo changes are logged here.
 ### Known Issues
 
 - Truth Social returned `403 Forbidden` for the statuses endpoint from this Codex environment, including the known endpoint shape `https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_replies=true`.
-

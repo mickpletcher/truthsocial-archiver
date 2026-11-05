@@ -368,4 +368,3 @@ The current workflow artifacts are unsigned. Windows SmartScreen or macOS Gateke
 Update `assessment.md` and `changelog.md` whenever behavior, commands, configuration, workflows, data paths, or known limitations change.
 
 Record completed work in `completed-upgrades.md`. Keep active backlog items in the ignored local `future-upgrades.md` file.
-

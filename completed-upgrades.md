@@ -431,7 +431,6 @@ Validation:
 - PowerShell syntax passed.
 - JavaScript syntax passed.
 
-
 ## Community Standards (Prepared 2026-11-05)
 
 Status: Implemented on the community standards branch; pending review and merge.

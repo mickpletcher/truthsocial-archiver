@@ -118,4 +118,3 @@ Completed locally on August 30, 2026:
 Update this file and `changelog.md` whenever behavior, commands, config, workflows, data paths, validation status, known issues, or next steps change.
 
 Use local ignored `future-upgrades.md` for active backlog items. Move completed work to `completed-upgrades.md` when it ships.
-
