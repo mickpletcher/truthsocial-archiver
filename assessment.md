@@ -10,6 +10,14 @@ The previous direct Truth Social API workflow was nonfunctional. All 52 schedule
 
 The project has two consumer paths. The PowerShell script synchronizes a newer JSONL snapshot from this project's GitHub repository. The published desktop app provides the same validated update behavior through a Windows installer and macOS DMGs without requiring PowerShell or Python. GitHub Actions and explicit `-UpdateFromSource` runs retain upstream CNN ingestion.
 
+## Dependency Maintenance (2026-11-05)
+
+Electron 45.2.3, Electron Forge 8.0.1, Playwright 1.64.1, ESLint 10.13.0, globals 17.13.0, and Markdownlint CLI 0.24.0 consolidate the outstanding dependency branches. Forge replaces the vulnerable extract-zip build dependency with the maintained Electron extractor. Compatible transitive refreshes and version-scoped glob/minimatch/KaTeX overrides address the remaining advisories without replacing legacy APIs used by older build tools. A scoped re2js 2.8.7 override addresses Markdownlint's pinned version.
+
+The macOS DMG toolchain now resolves image-size 2.0.4. `scripts/patch-appdmg.mjs` adapts appdmg 0.6.6's callback call to the patched Promise API during macOS postinstall, preserving the existing installer background and Finder layout. It checks the upstream version and exact source, is idempotent, and fails installation on unexpected source rather than silently ignoring a patch failure. Review/remove this compatibility patch when appdmg changes. Linux and Windows do not install this macOS-only optional package.
+
+All historical audit exceptions were removed. The local npm audit reports zero vulnerabilities across the complete lockfile, including optional platform dependencies. Regression tests cover the DMG adapter's exact/idempotent transformation, successful dimensions, and error propagation. Native installer builds and packaged smoke tests remain required before considering the cross-platform update verified. GitHub alert closure must be checked after the updated lockfile reaches the default branch.
+
 ## Community Standards
 
 Community policy files, issue forms, and a pull request checklist document contribution, support, conduct, security, and accessibility expectations. Markdown linting includes the new policy files and pull request template. The existing MIT license is unchanged. Accessibility targets are not claims of conformance; browser and desktop assistive-technology coverage still needs verification. Private security reporting availability and a dedicated private conduct/support contact remain unverified; policies describe a public contact-request fallback without disclosing sensitive details.

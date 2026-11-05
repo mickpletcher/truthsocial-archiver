@@ -268,6 +268,8 @@ npm run test:electron
 npm run make -- --arch=x64
 ```
 
+On macOS, `npm ci` also applies a checked compatibility patch to appdmg 0.6.6 so its existing background/layout uses the patched image-size 2.0.4 API. Do not skip install scripts for a Mac build. A source/version mismatch fails installation and requires reviewing `scripts/patch-appdmg.mjs`; do not bypass that failure.
+
 The PowerShell test command requires Pester 5.7.1. PowerShell linting requires PSScriptAnalyzer 1.25.0. The quality workflow installs both modules automatically.
 
 Run the Windows build on Windows. Run the DMG build on macOS with `--arch=arm64` or `--arch=x64`. The GitHub Actions workflow builds both Mac architectures on native runners.

@@ -4,6 +4,14 @@ All notable repo changes are logged here.
 
 ## 2026-11-05
 
+### Dependency Maintenance
+
+- Consolidated Electron 45.2.3, Forge/makers 8.0.1, Playwright 1.64.1, ESLint 10.13.0, globals 17.13.0, and Markdownlint CLI 0.24.0 upgrades.
+- Refreshed transitive dependencies and added version-scoped overrides for patched glob/minimatch, KaTeX, and Markdownlint's re2js while retaining legacy consumer compatibility.
+- Replaced legacy image-size with 2.0.4 in appdmg, with a checked macOS postinstall compatibility patch and regression tests that preserve default DMG visuals and propagate errors.
+- Removed all audit allowlist entries; local full-graph audit reports zero vulnerabilities.
+- Consolidated the pinned GitHub Actions updates. No archive data or application security controls were changed; native installers and smoke tests must verify the runtime/toolchain upgrades.
+
 ### Added
 
 - Added contribution, conduct, support, security, and accessibility policies tailored to the current single-profile JSONL archive and desktop/browser interfaces.
