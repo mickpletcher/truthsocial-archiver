@@ -268,6 +268,8 @@ npm run test:electron
 npm run make -- --arch=x64
 ```
 
+On macOS, `npm ci` also applies a checked compatibility patch to appdmg 0.6.6 so its existing background/layout uses the patched image-size 2.0.4 API. Do not skip install scripts for a Mac build. A source/version mismatch fails installation and requires reviewing `scripts/patch-appdmg.mjs`; do not bypass that failure.
+
 The PowerShell test command requires Pester 5.7.1. PowerShell linting requires PSScriptAnalyzer 1.25.0. The quality workflow installs both modules automatically.
 
 Run the Windows build on Windows. Run the DMG build on macOS with `--arch=arm64` or `--arch=x64`. The GitHub Actions workflow builds both Mac architectures on native runners.
@@ -352,6 +354,16 @@ The current workflow artifacts are unsigned. Windows SmartScreen or macOS Gateke
 - Local synchronization requires network access to GitHub and only updates when the remote workflow has published a newer archive.
 - Desktop builds are unsigned until Windows and Apple signing credentials are configured.
 - This is not an official Truth Social client or API integration.
+
+## Community and Support
+
+- [Contributing](CONTRIBUTING.md): development, checks, and archive integrity.
+- [Code of Conduct](CODE_OF_CONDUCT.md): participation and moderation.
+- [Support](SUPPORT.md): help, data concerns, and reporting routes.
+- [Security Policy](SECURITY.md): reporting vulnerabilities without public disclosure.
+- [Accessibility](ACCESSIBILITY.md): goals, limitations, reporting barriers, and review guidance.
+- [Issue templates](https://github.com/mickpletcher/truthsocial-archiver/issues/new/choose): bugs, feature requests, and accessibility reports.
+- [MIT license](LICENSE): project code licensing; third-party posts and media retain their own rights.
 
 ## Maintainer Notes
 

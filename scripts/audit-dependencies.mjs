@@ -1,19 +1,6 @@
 import { spawnSync } from 'node:child_process';
 
-const allowedAdvisories = new Map([
-  [
-    'GHSA-5p2g-fcmc-qvqq',
-    'image-size has no patched npm release; Electron Forge uses it only while building macOS disk images from repository-controlled inputs.'
-  ],
-  [
-    'GHSA-jmr9-qjv8-65gv',
-    'extract-zip has no patched npm release; Electron Packager uses it to unpack the pinned Electron distribution during trusted builds.'
-  ],
-  [
-    'GHSA-w3rx-r6r6-pgpr',
-    'image-size has no patched npm release; Electron Forge uses it only while building macOS disk images from repository-controlled inputs.'
-  ]
-]);
+const allowedAdvisories = new Map();
 
 const npmCli = process.env.npm_execpath;
 const command = npmCli ? process.execPath : process.platform === 'win32' ? 'npm.cmd' : 'npm';

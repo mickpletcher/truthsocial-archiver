@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest a focused improvement to the archive or its tools.
+title: '[Feature]: '
+body:
+- type: markdown
+  attributes:
+    value: This issue is public. Do not include credentials, private data, medical details, or vulnerability information. Follow [SECURITY.md](https://github.com/mickpletcher/truthsocial-archiver/blob/main/SECURITY.md) for security concerns. Text-only reports are welcome.
+- type: textarea
+  id: problem
+  attributes:
+    label: Problem or user need
+    description: Describe who this helps and what they cannot do today.
+  validations:
+    required: true
+- type: textarea
+  id: proposal
+  attributes:
+    label: Proposed improvement
+    description: Explain the desired behavior and how it fits the current single-profile archive.
+  validations:
+    required: true
+- type: textarea
+  id: alternatives
+  attributes:
+    label: Alternatives and trade-offs
+    description: Consider accessibility, archive integrity, privacy, source availability, and maintenance.
+  validations:
+    required: false

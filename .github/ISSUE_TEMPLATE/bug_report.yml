@@ -1,0 +1,35 @@
+name: Bug report
+description: Report a reproducible archive, browser, desktop, or update problem.
+title: '[Bug]: '
+body:
+- type: markdown
+  attributes:
+    value: This issue is public. Do not include credentials, private data, medical details, or vulnerability information. Follow [SECURITY.md](https://github.com/mickpletcher/truthsocial-archiver/blob/main/SECURITY.md) for security concerns. Text-only reports are welcome.
+- type: textarea
+  id: problem
+  attributes:
+    label: What happened?
+    description: Describe the problem and expected behavior.
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Steps to reproduce
+    description: Give minimal steps. For an archive discrepancy, include only a public post URL or ID and relevant date.
+  validations:
+    required: true
+- type: textarea
+  id: environment
+  attributes:
+    label: Environment
+    description: 'App version or commit, OS, browser/version if relevant, and mode: Electron, local web, local sync, or source update.'
+  validations:
+    required: true
+- type: textarea
+  id: evidence
+  attributes:
+    label: Sanitized logs or additional context
+    description: Remove personal paths and other private data. Screenshots are optional; do not upload archive dumps.
+  validations:
+    required: false

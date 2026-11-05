@@ -1,0 +1,42 @@
+name: Accessibility barrier
+description: Report a barrier in documentation, browser search, or the desktop app.
+title: '[Accessibility]: '
+body:
+- type: markdown
+  attributes:
+    value: This issue is public. Do not include credentials, private data, medical details, or vulnerability information. Follow [SECURITY.md](https://github.com/mickpletcher/truthsocial-archiver/blob/main/SECURITY.md) for security concerns. Text-only reports are welcome.
+- type: textarea
+  id: barrier
+  attributes:
+    label: Task and barrier
+    description: What were you trying to do? What prevented you? A diagnosis is not needed.
+  validations:
+    required: true
+- type: textarea
+  id: expected
+  attributes:
+    label: Expected behavior
+    description: Describe what would make the task usable.
+  validations:
+    required: true
+- type: textarea
+  id: steps
+  attributes:
+    label: Steps to reproduce
+    description: Include a page or control and steps, if known. You can submit without technical details.
+  validations:
+    required: false
+- type: textarea
+  id: environment
+  attributes:
+    label: Environment (optional)
+    description: Browser or desktop version, OS, assistive technology and versions if relevant and comfortable to share.
+  validations:
+    required: false
+- type: textarea
+  id: workaround
+  attributes:
+    label: Workaround or additional context (optional)
+    description: Text-only descriptions are sufficient. Remove personal information from any optional screenshot or recording.
+  validations:
+    required: false
