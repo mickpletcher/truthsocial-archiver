@@ -2,6 +2,12 @@
 
 All notable repo changes are logged here.
 
+## v1.0.1 - 2026-11-05
+
+- Package the Electron 45.2.3 / Forge 8.0.1 maintenance updates described below as v1.0.1, with matching package and lockfile versions.
+- Publish versioned release notes identifying the installers as unsigned test builds. Windows SmartScreen and macOS Gatekeeper may warn or block them; code signing and Apple notarization are needed before normal public distribution.
+- Clarify that archive-data updates refresh posts and do not upgrade the application binary.
+
 ## 2026-11-05
 
 ### Dependency Maintenance

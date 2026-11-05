@@ -217,5 +217,5 @@ jobs:
           gh release create "$GITHUB_REF_NAME"
           release-assets/*
           --verify-tag
-          --generate-notes
+          --notes-file ".github/releases/$GITHUB_REF_NAME.md"
           --title "Truth Social Archive $GITHUB_REF_NAME"

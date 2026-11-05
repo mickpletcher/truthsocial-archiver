@@ -1,7 +1,7 @@
 {
   "name": "truth-social-archive-desktop",
   "productName": "Truth Social Archive",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Searchable desktop archive of Donald J. Trump's public Truth Social posts.",
   "main": "desktop/main.js",
   "author": "Mick Pletcher",

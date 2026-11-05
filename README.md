@@ -247,8 +247,9 @@ This section is for maintainers. Average users should use a built installer.
 ### Publish a Desktop Release
 
 1. Update `version` in `package.json` and `package-lock.json`.
-2. Commit and push the version change to `main`.
-3. Create and push a matching tag such as `v1.0.0`.
+2. Add matching release notes in `.github/releases/v<version>.md`, including the unsigned test-build warning, and update `changelog.md`.
+3. Commit and push the release preparation to `main`; wait for Quality, CodeQL, and all three desktop builds to pass on that exact commit.
+4. Create and push the matching tag, after checking that it does not already exist.
 
 ```powershell
 git tag v1.0.0
