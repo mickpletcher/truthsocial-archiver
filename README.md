@@ -353,8 +353,19 @@ The current workflow artifacts are unsigned. Windows SmartScreen or macOS Gateke
 - Desktop builds are unsigned until Windows and Apple signing credentials are configured.
 - This is not an official Truth Social client or API integration.
 
+## Community and Support
+
+- [Contributing](CONTRIBUTING.md): development, checks, and archive integrity.
+- [Code of Conduct](CODE_OF_CONDUCT.md): participation and moderation.
+- [Support](SUPPORT.md): help, data concerns, and reporting routes.
+- [Security Policy](SECURITY.md): reporting vulnerabilities without public disclosure.
+- [Accessibility](ACCESSIBILITY.md): goals, limitations, reporting barriers, and review guidance.
+- [Issue templates](https://github.com/mickpletcher/truthsocial-archiver/issues/new/choose): bugs, feature requests, and accessibility reports.
+- [MIT license](LICENSE): project code licensing; third-party posts and media retain their own rights.
+
 ## Maintainer Notes
 
 Update `assessment.md` and `changelog.md` whenever behavior, commands, configuration, workflows, data paths, or known limitations change.
 
 Record completed work in `completed-upgrades.md`. Keep active backlog items in the ignored local `future-upgrades.md` file.
+

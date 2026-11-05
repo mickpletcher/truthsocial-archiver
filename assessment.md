@@ -10,6 +10,10 @@ The previous direct Truth Social API workflow was nonfunctional. All 52 schedule
 
 The project has two consumer paths. The PowerShell script synchronizes a newer JSONL snapshot from this project's GitHub repository. The published desktop app provides the same validated update behavior through a Windows installer and macOS DMGs without requiring PowerShell or Python. GitHub Actions and explicit `-UpdateFromSource` runs retain upstream CNN ingestion.
 
+## Community Standards
+
+Community policy files, issue forms, and a pull request checklist document contribution, support, conduct, security, and accessibility expectations. Markdown linting includes the new policy files and pull request template. The existing MIT license is unchanged. Accessibility targets are not claims of conformance; browser and desktop assistive-technology coverage still needs verification. Private security reporting availability and a dedicated private conduct/support contact remain unverified; policies describe a public contact-request fallback without disclosing sensitive details.
+
 ## Implemented
 
 - Fixed profile target at `https://truthsocial.com/@realDonaldTrump`.
@@ -114,3 +118,4 @@ Completed locally on August 30, 2026:
 Update this file and `changelog.md` whenever behavior, commands, config, workflows, data paths, validation status, known issues, or next steps change.
 
 Use local ignored `future-upgrades.md` for active backlog items. Move completed work to `completed-upgrades.md` when it ships.
+

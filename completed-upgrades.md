@@ -430,3 +430,14 @@ Validation:
 - Verified `future-upgrades.md` is ignored by Git.
 - PowerShell syntax passed.
 - JavaScript syntax passed.
+
+
+## Community Standards (Prepared 2026-11-05)
+
+Status: Implemented on the community standards branch; pending review and merge.
+
+- Added project-specific contribution, conduct, support, security, and accessibility guidance.
+- Added bug, feature, and accessibility issue forms plus a pull request checklist.
+- Added README discovery links and lint coverage for community Markdown.
+- Preserved the existing MIT license, archive data, and application behavior.
+- Accessibility conformance and assistive-technology compatibility are not claimed. Private reporting settings and a dedicated private contact remain unverified.

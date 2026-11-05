@@ -2,6 +2,15 @@
 
 All notable repo changes are logged here.
 
+## 2026-11-05
+
+### Added
+
+- Added contribution, conduct, support, security, and accessibility policies tailored to the current single-profile JSONL archive and desktop/browser interfaces.
+- Added bug, feature, and accessibility issue forms, support/security links, and a pull request checklist.
+- Linked community guidance from the README and included policy Markdown in lint checks.
+- Documented accessibility verification gaps and conditional private-reporting routes without claiming compliance or a guaranteed response time.
+
 ## 2026-08-30
 
 ### Added
@@ -199,3 +208,4 @@ All notable repo changes are logged here.
 ### Known Issues
 
 - Truth Social returned `403 Forbidden` for the statuses endpoint from this Codex environment, including the known endpoint shape `https://truthsocial.com/api/v1/accounts/107780257626128497/statuses?exclude_replies=true`.
+

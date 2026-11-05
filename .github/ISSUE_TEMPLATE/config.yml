@@ -1,0 +1,12 @@
+blank_issues_enabled: true
+contact_links:
+- name: Support and archive content concerns
+  url: https://github.com/mickpletcher/truthsocial-archiver/blob/main/SUPPORT.md
+  about: Read help and safe reporting routes before posting private information.
+- name: Security reporting
+  url: https://github.com/mickpletcher/truthsocial-archiver/blob/main/SECURITY.md
+  about: Do not report vulnerabilities in public issues; read the private-reporting
+    guidance.
+- name: Community conduct
+  url: https://github.com/mickpletcher/truthsocial-archiver/blob/main/CODE_OF_CONDUCT.md
+  about: Read conduct and safe incident-reporting guidance.
